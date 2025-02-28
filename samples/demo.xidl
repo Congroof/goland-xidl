@@ -1,0 +1,21 @@
+schema schema_name {
+  @desc "字段描述"
+  field_name?:string
+}
+
+@summary "接口概要"
+@desc "接口描述"
+@name "接口名称"
+@tags {"标签1", "标签2"}
+@middlewares {"validate-identity","validate-enhancer"}
+get /path/{@xtype "int64" param_name:string}/path2
+  ? {
+    offset:int64[0,]
+    limit:int64[1,1000]
+  }
+  200 response_type
+;
+// 
+
+/**
+*/
