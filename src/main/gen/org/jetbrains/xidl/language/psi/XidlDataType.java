@@ -8,7 +8,7 @@ import com.intellij.psi.PsiElement;
 public interface XidlDataType extends PsiElement {
 
   @Nullable
-  PsiElement getIdentifier();
+  XidlTypeReference getTypeReference();
 
   @Nullable
   PsiElement getSimpleType();

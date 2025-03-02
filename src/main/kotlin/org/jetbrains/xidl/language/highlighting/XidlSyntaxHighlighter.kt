@@ -63,8 +63,6 @@ class XidlSyntaxHighlighter : SyntaxHighlighterBase() {
             XidlTypes.LITERAL_STRING -> pack(STRING)
             XidlTypes.LITERAL_INTEGER, XidlTypes.LITERAL_FLOAT -> pack(NUMBER)
 
-            // 自定义类型
-//            XidlTypes.XIDL_CUSTOM_TYPE -> pack(KEYWORD)
             // 关键字
             XidlTypes.SIMPLE_TYPE, XidlTypes.KEYWORD -> pack(KEYWORD)
             // 标识符

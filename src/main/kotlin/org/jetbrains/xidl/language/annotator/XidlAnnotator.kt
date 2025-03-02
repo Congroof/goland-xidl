@@ -9,7 +9,7 @@ import org.jetbrains.xidl.language.psi.XidlTypeReference
 class XidlAnnotator : Annotator {
     override fun annotate(element: com.intellij.psi.PsiElement, holder: com.intellij.lang.annotation.AnnotationHolder) {
         if (element is XidlDataType) {
-            val identifier = element.identifier
+            val identifier = element.typeReference
             if (identifier != null) {
                 holder.newSilentAnnotation(HighlightSeverity.INFORMATION)
                     .range(identifier.textRange)

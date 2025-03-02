@@ -12,7 +12,7 @@ import org.jetbrains.xidl.language.psi.*;
 
 public class XidlSchemaDeclarationImpl extends XidlNamedElementImpl implements XidlSchemaDeclaration {
 
-  public XidlSchemaDeclarationImpl( @NotNull ASTNode node) {
+  public XidlSchemaDeclarationImpl(@NotNull ASTNode node) {
     super(node);
   }
 
@@ -30,6 +30,24 @@ public class XidlSchemaDeclarationImpl extends XidlNamedElementImpl implements X
   @NotNull
   public List<XidlDataType> getDataTypeList() {
     return PsiTreeUtil.getChildrenOfTypeAsList(this, XidlDataType.class);
+  }
+
+  @Override
+  @NotNull
+  public String getName() {
+    return XidlPsiImplUtil.getName(this);
+  }
+
+  @Override
+  @NotNull
+  public PsiElement setName(@NotNull String newName) {
+    return XidlPsiImplUtil.setName(this, newName);
+  }
+
+  @Override
+  @NotNull
+  public PsiElement getNameIdentifier() {
+    return XidlPsiImplUtil.getNameIdentifier(this);
   }
 
 }

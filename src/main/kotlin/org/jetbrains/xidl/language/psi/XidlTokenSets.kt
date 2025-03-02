@@ -6,6 +6,7 @@ interface XidlTokenSets {
     companion object {
         val COMMENTS: TokenSet = TokenSet.create(XidlTypes.LINE_COMMENT, XidlTypes.BLOCK_COMMENT)
         val LITERALS: TokenSet = TokenSet.create(XidlTypes.LITERAL_STRING, XidlTypes.LITERAL_BOOLEAN, XidlTypes.LITERAL_INTEGER, XidlTypes.LITERAL_FLOAT)
+        val TYPE_REFERENCES: TokenSet = TokenSet.create(XidlTypes.TYPE_REFERENCE, XidlTypes.IDENTIFIER, XidlTypes.SCHEMA_DECLARATION)
     }
 }
 

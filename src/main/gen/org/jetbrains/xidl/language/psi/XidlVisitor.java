@@ -20,7 +20,7 @@ public class XidlVisitor extends PsiElementVisitor {
   }
 
   public void visitTypeReference(@NotNull XidlTypeReference o) {
-    visitPsiElement(o);
+    visitNamedElement(o);
   }
 
   public void visitNamedElement(@NotNull XidlNamedElement o) {

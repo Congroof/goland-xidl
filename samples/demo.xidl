@@ -1,6 +1,11 @@
-schema schema_name {
+schema innerUser {
+  age: int64
+}
+
+schema response_type {
   @desc "字段描述"
   field_name?:string
+  inner:innerUser
 }
 
 @summary "接口概要"
@@ -15,7 +20,3 @@ get /path/{@xtype "int64" param_name:string}/path2
   }
   200 response_type
 ;
-// 
-
-/**
-*/

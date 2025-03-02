@@ -10,13 +10,13 @@ public interface XidlSchemaDeclaration extends XidlNamedElement {
   @NotNull
   List<XidlDataType> getDataTypeList();
 
-  @Nullable
+  @NotNull
   String getName();
 
   @NotNull
-  PsiElement setName(@NotNull String name);
+  PsiElement setName(@NotNull String newName);
 
-  @Nullable
+  @NotNull
   PsiElement getNameIdentifier();
 
 }

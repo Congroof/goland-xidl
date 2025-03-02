@@ -36,31 +36,117 @@ public class XidlParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // annotation (literal_string | literal_strings)?
+  // none_anno | (annotation (literal_string | literal_strings)?)
   static boolean annotation_item(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "annotation_item")) return false;
-    if (!nextTokenIs(b, ANNOTATION)) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = none_anno(b, l + 1);
+    if (!r) r = annotation_item_1(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // annotation (literal_string | literal_strings)?
+  private static boolean annotation_item_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "annotation_item_1")) return false;
     boolean r;
     Marker m = enter_section_(b);
     r = consumeToken(b, ANNOTATION);
-    r = r && annotation_item_1(b, l + 1);
+    r = r && annotation_item_1_1(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
   }
 
   // (literal_string | literal_strings)?
-  private static boolean annotation_item_1(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "annotation_item_1")) return false;
-    annotation_item_1_0(b, l + 1);
+  private static boolean annotation_item_1_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "annotation_item_1_1")) return false;
+    annotation_item_1_1_0(b, l + 1);
     return true;
   }
 
   // literal_string | literal_strings
-  private static boolean annotation_item_1_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "annotation_item_1_0")) return false;
+  private static boolean annotation_item_1_1_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "annotation_item_1_1_0")) return false;
     boolean r;
     r = consumeToken(b, LITERAL_STRING);
     if (!r) r = literal_strings(b, l + 1);
+    return r;
+  }
+
+  /* ********************************************************** */
+  // annotation_item* "cmd" text? ("{" (cmd_item | key_value_item | key_type_item)+ "}")?
+  static boolean cmd_item(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "cmd_item")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = cmd_item_0(b, l + 1);
+    r = r && consumeToken(b, "cmd");
+    r = r && cmd_item_2(b, l + 1);
+    r = r && cmd_item_3(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // annotation_item*
+  private static boolean cmd_item_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "cmd_item_0")) return false;
+    while (true) {
+      int c = current_position_(b);
+      if (!annotation_item(b, l + 1)) break;
+      if (!empty_element_parsed_guard_(b, "cmd_item_0", c)) break;
+    }
+    return true;
+  }
+
+  // text?
+  private static boolean cmd_item_2(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "cmd_item_2")) return false;
+    text(b, l + 1);
+    return true;
+  }
+
+  // ("{" (cmd_item | key_value_item | key_type_item)+ "}")?
+  private static boolean cmd_item_3(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "cmd_item_3")) return false;
+    cmd_item_3_0(b, l + 1);
+    return true;
+  }
+
+  // "{" (cmd_item | key_value_item | key_type_item)+ "}"
+  private static boolean cmd_item_3_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "cmd_item_3_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeToken(b, "{");
+    r = r && cmd_item_3_0_1(b, l + 1);
+    r = r && consumeToken(b, "}");
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // (cmd_item | key_value_item | key_type_item)+
+  private static boolean cmd_item_3_0_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "cmd_item_3_0_1")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = cmd_item_3_0_1_0(b, l + 1);
+    while (r) {
+      int c = current_position_(b);
+      if (!cmd_item_3_0_1_0(b, l + 1)) break;
+      if (!empty_element_parsed_guard_(b, "cmd_item_3_0_1", c)) break;
+    }
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // cmd_item | key_value_item | key_type_item
+  private static boolean cmd_item_3_0_1_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "cmd_item_3_0_1_0")) return false;
+    boolean r;
+    r = cmd_item(b, l + 1);
+    if (!r) r = key_value_item(b, l + 1);
+    if (!r) r = key_type_item(b, l + 1);
     return r;
   }
 
@@ -88,7 +174,7 @@ public class XidlParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // (integer_scope? ("*"? (simple_type | identifier)) integer_scope?) | float_data_type
+  // (integer_scope? ("*"? (simple_type | type_reference )) integer_scope?) | float_data_type
   public static boolean data_type(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "data_type")) return false;
     boolean r;
@@ -99,7 +185,7 @@ public class XidlParser implements PsiParser, LightPsiParser {
     return r;
   }
 
-  // integer_scope? ("*"? (simple_type | identifier)) integer_scope?
+  // integer_scope? ("*"? (simple_type | type_reference )) integer_scope?
   private static boolean data_type_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "data_type_0")) return false;
     boolean r;
@@ -118,7 +204,7 @@ public class XidlParser implements PsiParser, LightPsiParser {
     return true;
   }
 
-  // "*"? (simple_type | identifier)
+  // "*"? (simple_type | type_reference )
   private static boolean data_type_0_1(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "data_type_0_1")) return false;
     boolean r;
@@ -136,12 +222,12 @@ public class XidlParser implements PsiParser, LightPsiParser {
     return true;
   }
 
-  // simple_type | identifier
+  // simple_type | type_reference
   private static boolean data_type_0_1_1(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "data_type_0_1_1")) return false;
     boolean r;
     r = consumeToken(b, SIMPLE_TYPE);
-    if (!r) r = consumeToken(b, IDENTIFIER);
+    if (!r) r = type_reference(b, l + 1);
     return r;
   }
 
@@ -150,6 +236,18 @@ public class XidlParser implements PsiParser, LightPsiParser {
     if (!recursion_guard_(b, l, "data_type_0_2")) return false;
     integer_scope(b, l + 1);
     return true;
+  }
+
+  /* ********************************************************** */
+  // "{" "}"
+  static boolean empty_object(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "empty_object")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeToken(b, "{");
+    r = r && consumeToken(b, "}");
+    exit_section_(b, m, null, r);
+    return r;
   }
 
   /* ********************************************************** */
@@ -336,7 +434,7 @@ public class XidlParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // annotation_item* http_method http_path (http_query | http_header | cookie | http_body)* http_resp http_resp_header? ";"
+  // annotation_item* http_method http_path (http_query | http_header | cookie | http_body | http_resp_header)* http_resp http_resp_header? ";"
   static boolean http_operation(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "http_operation")) return false;
     boolean r;
@@ -363,7 +461,7 @@ public class XidlParser implements PsiParser, LightPsiParser {
     return true;
   }
 
-  // (http_query | http_header | cookie | http_body)*
+  // (http_query | http_header | cookie | http_body | http_resp_header)*
   private static boolean http_operation_3(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "http_operation_3")) return false;
     while (true) {
@@ -374,7 +472,7 @@ public class XidlParser implements PsiParser, LightPsiParser {
     return true;
   }
 
-  // http_query | http_header | cookie | http_body
+  // http_query | http_header | cookie | http_body | http_resp_header
   private static boolean http_operation_3_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "http_operation_3_0")) return false;
     boolean r;
@@ -382,6 +480,7 @@ public class XidlParser implements PsiParser, LightPsiParser {
     if (!r) r = http_header(b, l + 1);
     if (!r) r = cookie(b, l + 1);
     if (!r) r = http_body(b, l + 1);
+    if (!r) r = http_resp_header(b, l + 1);
     return r;
   }
 
@@ -393,7 +492,7 @@ public class XidlParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // ("/" (text | ("{" key_type_item "}")))+ "/"?
+  // ("/" (text | ("{" key_type_item ","? "}")))+ "/"?
   static boolean http_path(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "http_path")) return false;
     boolean r;
@@ -404,7 +503,7 @@ public class XidlParser implements PsiParser, LightPsiParser {
     return r;
   }
 
-  // ("/" (text | ("{" key_type_item "}")))+
+  // ("/" (text | ("{" key_type_item ","? "}")))+
   private static boolean http_path_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "http_path_0")) return false;
     boolean r;
@@ -419,7 +518,7 @@ public class XidlParser implements PsiParser, LightPsiParser {
     return r;
   }
 
-  // "/" (text | ("{" key_type_item "}"))
+  // "/" (text | ("{" key_type_item ","? "}"))
   private static boolean http_path_0_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "http_path_0_0")) return false;
     boolean r;
@@ -430,7 +529,7 @@ public class XidlParser implements PsiParser, LightPsiParser {
     return r;
   }
 
-  // text | ("{" key_type_item "}")
+  // text | ("{" key_type_item ","? "}")
   private static boolean http_path_0_0_1(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "http_path_0_0_1")) return false;
     boolean r;
@@ -441,16 +540,24 @@ public class XidlParser implements PsiParser, LightPsiParser {
     return r;
   }
 
-  // "{" key_type_item "}"
+  // "{" key_type_item ","? "}"
   private static boolean http_path_0_0_1_1(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "http_path_0_0_1_1")) return false;
     boolean r;
     Marker m = enter_section_(b);
     r = consumeToken(b, "{");
     r = r && key_type_item(b, l + 1);
+    r = r && http_path_0_0_1_1_2(b, l + 1);
     r = r && consumeToken(b, "}");
     exit_section_(b, m, null, r);
     return r;
+  }
+
+  // ","?
+  private static boolean http_path_0_0_1_1_2(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "http_path_0_0_1_1_2")) return false;
+    consumeToken(b, ",");
+    return true;
   }
 
   // "/"?
@@ -473,7 +580,7 @@ public class XidlParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // literal_integer literal_string? (key_type_items | type_reference)
+  // literal_integer literal_string? (key_type_items | type_reference)?
   static boolean http_resp(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "http_resp")) return false;
     if (!nextTokenIs(b, LITERAL_INTEGER)) return false;
@@ -493,9 +600,16 @@ public class XidlParser implements PsiParser, LightPsiParser {
     return true;
   }
 
-  // key_type_items | type_reference
+  // (key_type_items | type_reference)?
   private static boolean http_resp_2(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "http_resp_2")) return false;
+    http_resp_2_0(b, l + 1);
+    return true;
+  }
+
+  // key_type_items | type_reference
+  private static boolean http_resp_2_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "http_resp_2_0")) return false;
     boolean r;
     r = key_type_items(b, l + 1);
     if (!r) r = type_reference(b, l + 1);
@@ -581,7 +695,7 @@ public class XidlParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // annotation_item* text "?"? ":" data_type
+  // annotation_item* text "?"? ":" data_type  ("=" (literal_string | literal_boolean | literal_float | literal_integer))?
   static boolean key_type_item(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "key_type_item")) return false;
     boolean r;
@@ -591,6 +705,7 @@ public class XidlParser implements PsiParser, LightPsiParser {
     r = r && key_type_item_2(b, l + 1);
     r = r && consumeToken(b, ":");
     r = r && data_type(b, l + 1);
+    r = r && key_type_item_5(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
   }
@@ -611,6 +726,35 @@ public class XidlParser implements PsiParser, LightPsiParser {
     if (!recursion_guard_(b, l, "key_type_item_2")) return false;
     consumeToken(b, "?");
     return true;
+  }
+
+  // ("=" (literal_string | literal_boolean | literal_float | literal_integer))?
+  private static boolean key_type_item_5(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "key_type_item_5")) return false;
+    key_type_item_5_0(b, l + 1);
+    return true;
+  }
+
+  // "=" (literal_string | literal_boolean | literal_float | literal_integer)
+  private static boolean key_type_item_5_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "key_type_item_5_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeToken(b, "=");
+    r = r && key_type_item_5_0_1(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // literal_string | literal_boolean | literal_float | literal_integer
+  private static boolean key_type_item_5_0_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "key_type_item_5_0_1")) return false;
+    boolean r;
+    r = consumeToken(b, LITERAL_STRING);
+    if (!r) r = consumeToken(b, LITERAL_BOOLEAN);
+    if (!r) r = consumeToken(b, LITERAL_FLOAT);
+    if (!r) r = consumeToken(b, LITERAL_INTEGER);
+    return r;
   }
 
   /* ********************************************************** */
@@ -833,14 +977,33 @@ public class XidlParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // (literal_strings | key_value_items | key_type_items+ | ("{" http_operation* "}"))?
+  // "@noescape" | "@deprecated" | "@omitempty" | "@pflag" | "@plagenv" | "@order" | "@nowrap" | "@nodoc" | "@nonstandard" | "@external" | "@i18n"
+  static boolean none_anno(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "none_anno")) return false;
+    boolean r;
+    r = consumeToken(b, "@noescape");
+    if (!r) r = consumeToken(b, "@deprecated");
+    if (!r) r = consumeToken(b, "@omitempty");
+    if (!r) r = consumeToken(b, "@pflag");
+    if (!r) r = consumeToken(b, "@plagenv");
+    if (!r) r = consumeToken(b, "@order");
+    if (!r) r = consumeToken(b, "@nowrap");
+    if (!r) r = consumeToken(b, "@nodoc");
+    if (!r) r = consumeToken(b, "@nonstandard");
+    if (!r) r = consumeToken(b, "@external");
+    if (!r) r = consumeToken(b, "@i18n");
+    return r;
+  }
+
+  /* ********************************************************** */
+  // (literal_strings | key_value_items | key_type_items+ | empty_object | ("{" http_operation* "}"))?
   static boolean object_item(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "object_item")) return false;
     object_item_0(b, l + 1);
     return true;
   }
 
-  // literal_strings | key_value_items | key_type_items+ | ("{" http_operation* "}")
+  // literal_strings | key_value_items | key_type_items+ | empty_object | ("{" http_operation* "}")
   private static boolean object_item_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "object_item_0")) return false;
     boolean r;
@@ -848,7 +1011,8 @@ public class XidlParser implements PsiParser, LightPsiParser {
     r = literal_strings(b, l + 1);
     if (!r) r = key_value_items(b, l + 1);
     if (!r) r = object_item_0_2(b, l + 1);
-    if (!r) r = object_item_0_3(b, l + 1);
+    if (!r) r = empty_object(b, l + 1);
+    if (!r) r = object_item_0_4(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
   }
@@ -869,39 +1033,36 @@ public class XidlParser implements PsiParser, LightPsiParser {
   }
 
   // "{" http_operation* "}"
-  private static boolean object_item_0_3(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "object_item_0_3")) return false;
+  private static boolean object_item_0_4(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "object_item_0_4")) return false;
     boolean r;
     Marker m = enter_section_(b);
     r = consumeToken(b, "{");
-    r = r && object_item_0_3_1(b, l + 1);
+    r = r && object_item_0_4_1(b, l + 1);
     r = r && consumeToken(b, "}");
     exit_section_(b, m, null, r);
     return r;
   }
 
   // http_operation*
-  private static boolean object_item_0_3_1(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "object_item_0_3_1")) return false;
+  private static boolean object_item_0_4_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "object_item_0_4_1")) return false;
     while (true) {
       int c = current_position_(b);
       if (!http_operation(b, l + 1)) break;
-      if (!empty_element_parsed_guard_(b, "object_item_0_3_1", c)) break;
+      if (!empty_element_parsed_guard_(b, "object_item_0_4_1", c)) break;
     }
     return true;
   }
 
   /* ********************************************************** */
-  // annotation_item* keyword text? object_item?
+  // annotation_item* (cmd_item | schema_declaration | http_operation | (keyword text? object_item?))
   public static boolean operation(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "operation")) return false;
-    if (!nextTokenIs(b, "<operation>", ANNOTATION, KEYWORD)) return false;
     boolean r;
     Marker m = enter_section_(b, l, _NONE_, OPERATION, "<operation>");
     r = operation_0(b, l + 1);
-    r = r && consumeToken(b, KEYWORD);
-    r = r && operation_2(b, l + 1);
-    r = r && operation_3(b, l + 1);
+    r = r && operation_1(b, l + 1);
     exit_section_(b, l, m, r, false, null);
     return r;
   }
@@ -917,30 +1078,72 @@ public class XidlParser implements PsiParser, LightPsiParser {
     return true;
   }
 
+  // cmd_item | schema_declaration | http_operation | (keyword text? object_item?)
+  private static boolean operation_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "operation_1")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = cmd_item(b, l + 1);
+    if (!r) r = schema_declaration(b, l + 1);
+    if (!r) r = http_operation(b, l + 1);
+    if (!r) r = operation_1_3(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // keyword text? object_item?
+  private static boolean operation_1_3(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "operation_1_3")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeToken(b, KEYWORD);
+    r = r && operation_1_3_1(b, l + 1);
+    r = r && operation_1_3_2(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
   // text?
-  private static boolean operation_2(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "operation_2")) return false;
+  private static boolean operation_1_3_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "operation_1_3_1")) return false;
     text(b, l + 1);
     return true;
   }
 
   // object_item?
-  private static boolean operation_3(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "operation_3")) return false;
+  private static boolean operation_1_3_2(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "operation_1_3_2")) return false;
     object_item(b, l + 1);
     return true;
   }
 
   /* ********************************************************** */
-  // 'schema' identifier key_type_items
+  // "schema" identifier (key_value_items | key_type_items | empty_object)?
   public static boolean schema_declaration(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "schema_declaration")) return false;
     boolean r;
     Marker m = enter_section_(b, l, _NONE_, SCHEMA_DECLARATION, "<schema declaration>");
     r = consumeToken(b, "schema");
     r = r && consumeToken(b, IDENTIFIER);
-    r = r && key_type_items(b, l + 1);
+    r = r && schema_declaration_2(b, l + 1);
     exit_section_(b, l, m, r, false, null);
+    return r;
+  }
+
+  // (key_value_items | key_type_items | empty_object)?
+  private static boolean schema_declaration_2(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "schema_declaration_2")) return false;
+    schema_declaration_2_0(b, l + 1);
+    return true;
+  }
+
+  // key_value_items | key_type_items | empty_object
+  private static boolean schema_declaration_2_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "schema_declaration_2_0")) return false;
+    boolean r;
+    r = key_value_items(b, l + 1);
+    if (!r) r = key_type_items(b, l + 1);
+    if (!r) r = empty_object(b, l + 1);
     return r;
   }
 
@@ -956,29 +1159,15 @@ public class XidlParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // identifier {
-  // //  methods=[getName setName getNameIdentifier]
-  // //  implements=["org.jetbrains.xidl.language.psi.XidlNamedElement"]
-  // //  mixin="org.jetbrains.xidl.language.psi.impl.XidlNamedElementImpl"
-  // }
+  // identifier
   public static boolean type_reference(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "type_reference")) return false;
     if (!nextTokenIs(b, IDENTIFIER)) return false;
     boolean r;
     Marker m = enter_section_(b);
     r = consumeToken(b, IDENTIFIER);
-    r = r && type_reference_1(b, l + 1);
     exit_section_(b, m, TYPE_REFERENCE, r);
     return r;
-  }
-
-  // {
-  // //  methods=[getName setName getNameIdentifier]
-  // //  implements=["org.jetbrains.xidl.language.psi.XidlNamedElement"]
-  // //  mixin="org.jetbrains.xidl.language.psi.impl.XidlNamedElementImpl"
-  // }
-  private static boolean type_reference_1(PsiBuilder b, int l) {
-    return true;
   }
 
   /* ********************************************************** */

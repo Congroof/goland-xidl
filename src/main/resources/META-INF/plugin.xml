@@ -44,6 +44,11 @@
 
         <psi.referenceContributor language="Xidl"
                                   implementation="org.jetbrains.xidl.language.reference.XidlReferenceContributor"/>
+        
+<!--        <lang.findUsagesProvider language="Xidl"-->
+<!--                implementationClass="org.jetbrains.xidl.language.reference.XidlFindUsageProvider"/>-->
 
+        <lang.elementManipulator forClass="org.jetbrains.xidl.language.psi.impl.XidlTypeReferenceImpl"
+                               implementationClass="org.jetbrains.xidl.language.reference.XidlTypeReferenceManipulator"/>
     </extensions>
 </idea-plugin>

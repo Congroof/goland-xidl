@@ -29,8 +29,8 @@ public class XidlDataTypeImpl extends ASTWrapperPsiElement implements XidlDataTy
 
   @Override
   @Nullable
-  public PsiElement getIdentifier() {
-    return findChildByType(IDENTIFIER);
+  public XidlTypeReference getTypeReference() {
+    return findChildByClass(XidlTypeReference.class);
   }
 
   @Override

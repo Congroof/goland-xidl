@@ -34,15 +34,21 @@ public class XidlOperationImpl extends ASTWrapperPsiElement implements XidlOpera
   }
 
   @Override
+  @Nullable
+  public XidlSchemaDeclaration getSchemaDeclaration() {
+    return findChildByClass(XidlSchemaDeclaration.class);
+  }
+
+  @Override
   @NotNull
   public List<XidlTypeReference> getTypeReferenceList() {
     return PsiTreeUtil.getChildrenOfTypeAsList(this, XidlTypeReference.class);
   }
 
   @Override
-  @NotNull
+  @Nullable
   public PsiElement getKeyword() {
-    return findNotNullChildByType(KEYWORD);
+    return findChildByType(KEYWORD);
   }
 
 }

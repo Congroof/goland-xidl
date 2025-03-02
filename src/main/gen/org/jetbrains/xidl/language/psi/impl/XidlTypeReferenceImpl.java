@@ -8,10 +8,10 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
 import static org.jetbrains.xidl.language.psi.XidlTypes.*;
-import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import org.jetbrains.xidl.language.psi.*;
+import com.intellij.psi.PsiReference;
 
-public class XidlTypeReferenceImpl extends ASTWrapperPsiElement implements XidlTypeReference {
+public class XidlTypeReferenceImpl extends XidlNamedElementImpl implements XidlTypeReference {
 
   public XidlTypeReferenceImpl(@NotNull ASTNode node) {
     super(node);
@@ -31,6 +31,30 @@ public class XidlTypeReferenceImpl extends ASTWrapperPsiElement implements XidlT
   @NotNull
   public PsiElement getIdentifier() {
     return findNotNullChildByType(IDENTIFIER);
+  }
+
+  @Override
+  @NotNull
+  public String getName() {
+    return XidlPsiImplUtil.getName(this);
+  }
+
+  @Override
+  @NotNull
+  public PsiElement setName(@NotNull String newName) {
+    return XidlPsiImplUtil.setName(this, newName);
+  }
+
+  @Override
+  @NotNull
+  public PsiElement getNameIdentifier() {
+    return XidlPsiImplUtil.getNameIdentifier(this);
+  }
+
+  @Override
+  @NotNull
+  public PsiReference getReference() {
+    return XidlPsiImplUtil.getReference(this);
   }
 
 }

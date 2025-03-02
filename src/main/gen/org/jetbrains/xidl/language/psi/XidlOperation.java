@@ -10,10 +10,13 @@ public interface XidlOperation extends PsiElement {
   @NotNull
   List<XidlDataType> getDataTypeList();
 
+  @Nullable
+  XidlSchemaDeclaration getSchemaDeclaration();
+
   @NotNull
   List<XidlTypeReference> getTypeReferenceList();
 
-  @NotNull
+  @Nullable
   PsiElement getKeyword();
 
 }
