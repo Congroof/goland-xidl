@@ -29,7 +29,6 @@ class XidlReference(element: PsiElement) : PsiReferenceBase<PsiElement?>(element
 
     override fun resolve(): PsiElement? {
         val results = multiResolve(false)
-        println("results: ${results.size}")
         return if (results.size == 1) results[0].element else null
     }
 

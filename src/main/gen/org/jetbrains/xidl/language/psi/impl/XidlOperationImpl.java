@@ -35,6 +35,12 @@ public class XidlOperationImpl extends ASTWrapperPsiElement implements XidlOpera
 
   @Override
   @Nullable
+  public XidlFuncName getFuncName() {
+    return findChildByClass(XidlFuncName.class);
+  }
+
+  @Override
+  @Nullable
   public XidlSchemaDeclaration getSchemaDeclaration() {
     return findChildByClass(XidlSchemaDeclaration.class);
   }

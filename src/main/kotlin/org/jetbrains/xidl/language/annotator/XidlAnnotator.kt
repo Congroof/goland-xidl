@@ -4,6 +4,7 @@ import com.intellij.lang.annotation.Annotator
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.editor.DefaultLanguageHighlighterColors
 import org.jetbrains.xidl.language.psi.XidlDataType
+import org.jetbrains.xidl.language.psi.XidlFuncName
 import org.jetbrains.xidl.language.psi.XidlTypeReference
 
 class XidlAnnotator : Annotator {
@@ -22,6 +23,14 @@ class XidlAnnotator : Annotator {
                 holder.newSilentAnnotation(HighlightSeverity.INFORMATION)
                     .range(identifier.textRange)
                     .textAttributes(DefaultLanguageHighlighterColors.CLASS_REFERENCE)
+                    .create()
+        }
+
+        if (element is XidlFuncName) {
+            val identifier = element.identifier
+                holder.newSilentAnnotation(HighlightSeverity.INFORMATION)
+                    .range(identifier.textRange)
+                    .textAttributes(DefaultLanguageHighlighterColors.FUNCTION_DECLARATION)
                     .create()
         }
     }

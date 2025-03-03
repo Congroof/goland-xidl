@@ -9,6 +9,7 @@ import org.jetbrains.xidl.language.psi.impl.*;
 public interface XidlTypes {
 
   IElementType DATA_TYPE = new XidlElementType("DATA_TYPE");
+  IElementType FUNC_NAME = new XidlElementType("FUNC_NAME");
   IElementType OPERATION = new XidlElementType("OPERATION");
   IElementType SCHEMA_DECLARATION = new XidlElementType("SCHEMA_DECLARATION");
   IElementType TYPE_REFERENCE = new XidlElementType("TYPE_REFERENCE");
@@ -35,6 +36,9 @@ public interface XidlTypes {
       IElementType type = node.getElementType();
       if (type == DATA_TYPE) {
         return new XidlDataTypeImpl(node);
+      }
+      else if (type == FUNC_NAME) {
+        return new XidlFuncNameImpl(node);
       }
       else if (type == OPERATION) {
         return new XidlOperationImpl(node);

@@ -11,6 +11,9 @@ public interface XidlOperation extends PsiElement {
   List<XidlDataType> getDataTypeList();
 
   @Nullable
+  XidlFuncName getFuncName();
+
+  @Nullable
   XidlSchemaDeclaration getSchemaDeclaration();
 
   @NotNull

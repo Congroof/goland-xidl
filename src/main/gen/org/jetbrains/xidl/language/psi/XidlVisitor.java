@@ -11,6 +11,10 @@ public class XidlVisitor extends PsiElementVisitor {
     visitPsiElement(o);
   }
 
+  public void visitFuncName(@NotNull XidlFuncName o) {
+    visitPsiElement(o);
+  }
+
   public void visitOperation(@NotNull XidlOperation o) {
     visitPsiElement(o);
   }

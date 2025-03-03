@@ -19,7 +19,8 @@
         <!-- 语法高亮器 -->
         <lang.syntaxHighlighterFactory language="Xidl"
                                      implementationClass="org.jetbrains.xidl.language.highlighting.XidlSyntaxHighlighterFactory"/>
-
+        <colorSettingsPage
+                implementation="org.jetbrains.xidl.language.highlighting.ColorSettingPage"/>
         <lang.parserDefinition
                 language="Xidl"
                 implementationClass="org.jetbrains.xidl.language.XidlParserDefinition"/>
@@ -44,7 +45,7 @@
 
         <psi.referenceContributor language="Xidl"
                                   implementation="org.jetbrains.xidl.language.reference.XidlReferenceContributor"/>
-        
+
 <!--        <lang.findUsagesProvider language="Xidl"-->
 <!--                implementationClass="org.jetbrains.xidl.language.reference.XidlFindUsageProvider"/>-->
 

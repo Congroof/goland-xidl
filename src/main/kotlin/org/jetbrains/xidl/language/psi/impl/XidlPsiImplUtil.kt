@@ -27,7 +27,6 @@ object XidlPsiImplUtil {
 
     @JvmStatic
     fun setName(element: XidlSchemaDeclaration, newName: String): PsiElement {
-        println("newName: $newName")
         // TODO: Implement this method
         return element
     }
@@ -39,7 +38,6 @@ object XidlPsiImplUtil {
 
     @JvmStatic
     fun setName(element: XidlTypeReference, newName: String): PsiElement {
-        println("newName: $newName")
         // TODO: Implement this method
         return element
     }

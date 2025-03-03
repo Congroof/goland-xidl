@@ -57,6 +57,16 @@ data_type ::=   (integer_scope? ("*"? (simple_type | type_reference )) integer_s
 private key_type_item ::= annotation_item* text "?"? ":" data_type  ("=" (literal_string | literal_boolean | literal_float | literal_integer))?
 private cmd_item ::= annotation_item* "cmd" text? ("{" (cmd_item | key_value_item | key_type_item)+ "}")?
 
+private func_declaration ::= "func" func_name "(" func_params? ")" func_return?
+
+func_name ::= identifier
+
+private func_params ::= func_param_group ("," func_param_group)* ","?
+private func_param_group ::= identifier ("," identifier)* data_type
+
+private func_return ::= "(" func_return_params ")" | data_type
+private func_return_params ::= data_type ("," data_type)* ","?
+
 schema_declaration ::= "schema" identifier (key_value_items | key_type_items | empty_object)? {
     mixin="org.jetbrains.xidl.language.psi.impl.XidlNamedElementImpl"
     implements="org.jetbrains.xidl.language.psi.XidlNamedElement"
@@ -79,5 +89,5 @@ private http_resp ::= literal_integer literal_string? (key_type_items | type_ref
 private http_resp_header ::= "!!" key_type_items
 private http_operation ::= annotation_item* http_method http_path (http_query | http_header | cookie | http_body | http_resp_header)* http_resp http_resp_header? ";"
 
-operation ::= annotation_item* (cmd_item | schema_declaration | http_operation | (keyword text? object_item?))
+operation ::= annotation_item* (func_declaration | cmd_item | schema_declaration | http_operation | (keyword text? object_item?))
 
