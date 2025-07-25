@@ -1,0 +1,94 @@
+{
+  parserClass="com.wps.cloud.xidl.language.parser.XidlParser"
+
+  extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
+
+  psiClassPrefix="Xidl"
+  psiImplClassSuffix="Impl"
+  psiPackage="org.jetbrains.xidl.language.psi"
+  psiImplPackage="org.jetbrains.xidl.language.psi.impl"
+  psiImplUtilClass="org.jetbrains.xidl.language.psi.impl.XidlPsiImplUtil"
+
+  elementTypeHolderClass="com.wps.cloud.xidl.language.psi.XidlTypes"
+  elementTypeClass="org.jetbrains.xidl.language.psi.XidlElementType"
+  tokenTypeClass="org.jetbrains.xidl.language.psi.XidlTokenType"
+
+  // 废弃
+  tokens=[
+      line_comment="regexp://.*"
+      block_comment="regexp:/\*(.|\n)*\*/"
+      literal_string="regexp:(\"[^\"\n]*\")|(`[^`]*`)"
+      literal_integer="regexp:\d+"
+      literal_boolean="regexp:true|false"
+      literal_float="regexp:\d+\.\d+"
+      annotation="regexp:@[a-zA-Z_][a-zA-Z0-9_]*"
+      keyword="regexp:cmd|def|tag|app|url|version|module|include|schema|endpoints|middleware|mcode|mname|mdepends|func|xapi|get|post|put|patch|delete|options|head"
+      simple_type="regexp:byte|int|int8|int16|int32|int64|uint|uint8|uint16|uint32|uint64|float32|float64|bool|string|datetime|any|map|chan|interface|(map<.*>)"
+      identifier="regexp:[a-zA-Z_][a-zA-Z0-9_]*"
+      left_paren="regexp:\("
+      right_paren="regexp:\)"
+      left_brace="regexp:\{"
+      right_brace="regexp:\}"
+      left_bracket="regexp:\["
+      right_bracket="regexp:\]"
+  ]
+}
+
+// todo: 每种语法规则的解释
+xidlFile ::= (comment|operation)*
+
+private comment ::= line_comment|block_comment
+private text ::= identifier|literal_string
+
+// TODO: 将annotation细化，每种注解的格式对应的类型进行固定. 其余的采用默认值
+private literal_strings ::= "{" literal_string ((",")? literal_string)* ","? "}"
+private key_value_items ::= "{" key_value_item ((",")? key_value_item)* ","? "}"
+private key_type_items ::= "{" key_type_item ((",")? key_type_item)* ","? "}"
+private none_anno ::=  ("@noescape" | "@deprecated" | "@omitempty" | "@pflag" | "@plagenv" | "@order" | "@nowrap" | "@nodoc" | "@nonstandard" | "@external" | "@i18n" )
+private annotation_item ::= none_anno | (annotation (literal_string | literal_strings)?)
+
+private object_item ::= (literal_strings | key_value_items | key_type_items+ | empty_object | ("{" http_operation* "}"))?
+private empty_object ::= "{" "}"
+private key_value_item ::= annotation_item* text "=" (literal_string | literal_boolean | literal_float | literal_integer)
+
+private integer_scope ::= "[" ((literal_integer "," literal_integer) | (literal_integer ",") | ("," literal_integer))? "]"
+private float_scope ::= "[" ((literal_float "," literal_float) | (literal_float ",") | ("," literal_float))? "]"
+private float_data_type ::=  integer_scope? ("*"? ("float32" | "float64")) float_scope?
+data_type ::=   (integer_scope? ("*"? (simple_type | type_reference )) integer_scope?) | float_data_type
+private key_type_item ::= annotation_item* text "?"? ":" data_type  ("=" (literal_string | literal_boolean | literal_float | literal_integer))?
+private cmd_item ::= annotation_item* "cmd" text? ("{" (cmd_item | key_value_item | key_type_item)+ "}")?
+
+private func_declaration ::= "func" func_name "(" func_params? ")" func_return?
+
+func_name ::= identifier
+
+private func_params ::= func_param_group ("," func_param_group)* ","?
+private func_param_group ::= identifier ("," identifier)* data_type
+
+private func_return ::= "(" func_return_params ")" | data_type
+private func_return_params ::= data_type ("," data_type)* ","?
+
+schema_declaration ::= "schema" identifier (key_value_items | key_type_items | empty_object)? {
+    mixin="org.jetbrains.xidl.language.psi.impl.XidlNamedElementImpl"
+    implements="org.jetbrains.xidl.language.psi.XidlNamedElement"
+    methods=[getName setName getNameIdentifier]
+}
+
+type_reference ::= identifier {
+    mixin="org.jetbrains.xidl.language.psi.impl.XidlNamedElementImpl"
+    implements="org.jetbrains.xidl.language.psi.XidlNamedElement"
+    methods=[getName setName getNameIdentifier getReference]
+}
+
+private http_method ::= "get" | "post" | "put" | "patch" | "delete" | "options" | "head"
+private http_path ::= ("/" (text | ("{" key_type_item ","? "}")))+ "/"?
+private http_query ::= "?" key_type_items
+private http_header ::= "!" key_type_items
+private cookie ::= "~" key_type_items
+private http_body ::= "." literal_string? (key_type_items | type_reference)?
+private http_resp ::= literal_integer literal_string? (key_type_items | type_reference)?
+private http_resp_header ::= "!!" key_type_items
+private http_operation ::= annotation_item* http_method http_path (http_query | http_header | cookie | http_body | http_resp_header)* http_resp http_resp_header? ";"
+
+operation ::= annotation_item* (func_declaration | cmd_item | schema_declaration | http_operation | (keyword text? object_item?))
+

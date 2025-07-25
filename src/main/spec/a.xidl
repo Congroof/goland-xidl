@@ -1,0 +1,12 @@
+schema a1 {
+  greeting: string
+}
+
+schema a2 {
+  greeting: string
+}
+
+@desc ""
+schema reply {
+  greeting: b1
+}

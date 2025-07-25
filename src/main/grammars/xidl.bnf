@@ -1,0 +1,148 @@
+{
+  parserClass="com.wps.cloud.xidl.language.parser.XidlParser"
+
+  extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
+
+  psiClassPrefix="Xidl"
+  psiImplClassSuffix="Impl"
+  psiPackage="com.wps.cloud.xidl.language.psi"
+  psiImplPackage="com.wps.cloud.xidl.language.psi.impl"
+  psiImplUtilClass="com.wps.cloud.xidl.language.psi.impl.XidlPsiImplUtil"
+
+  elementTypeHolderClass="com.wps.cloud.xidl.language.psi.XidlTypes"
+  elementTypeClass="com.wps.cloud.xidl.language.psi.XidlElementType"
+  tokenTypeClass="com.wps.cloud.xidl.language.psi.XidlTokenType"
+
+  // 注意tokens, 具体的写在前, 抽象的写在后(会影响解析结果)
+  tokens=[
+
+      LINE_COMMENT="regexp://.*"
+      BLOCK_COMMENT="regexp:/\*(.|\n)*\*/"
+
+      INTEGER_LITERAL="regexp:\d+"
+      FLOAT_LITERAL="regexp:\d+\.\d+"
+      BOOLEAN_LITERAL="regexp:true|false"
+      STRING_LITERAL="regexp:(\"[^\"\n]*\")|(`[^`]*`)"
+
+      SIMPLE_TYPE="regexp:byte|int|int8|int16|int32|int64|uint|uint8|uint16|uint32|uint64|float32|float64|bool|string|datetime|any|map|chan|interface"
+      KEYWORD="regexp:cmd|def|tag|app|url|version|module|include|schema|endpoints|middleware|mcode|mname|mdepends|func|xapi"
+      HTTP_METHOD="regexp:get|post|put|patch|delete|options|head"
+
+      ZERO_PARAM_ANNOTATION="regexp:@(noescape|deprecated|omitempty|pflag|pflagenv|order|nowrap|nodoc|nonstandard|external|i18n)"
+      SINGLE_PARAM_ANNOTATION="regexp:@(desc|title|summary|table|column|template|format|name|use|short|shorthand|long|min|server|parent|type|xtype|etype|level|timeout)"
+      MULTI_PARAM_ANNOTATION="regexp:@(tags|allof|oneof|anyof|middlewares|middleware_replace_map|x|permissions|aliases|scopes|identities|accountTags|companyTypes)"
+      CUSTOM_ANNOTATION="regexp:@[a-zA-Z_][a-zA-Z0-9_]*"
+
+      IDENTIFIER="regexp:[a-zA-Z_][a-zA-Z0-9_]*"
+
+      LPAREN="("
+      RPAREN=")"
+      LBRACE="{"
+      RBRACE="}"
+      LBRACKET="["
+      RBRACKET="]"
+      LANGLE="<"
+      RANGLE=">"
+      COMMA=","
+      SEMICOLON=";"
+      COLON=":"
+      DOT="."
+      MULTIPLY="*"
+      DIVIDE="/"
+      QUESTION="?"
+      ASSIGN="="
+      CHAN_SEND="<-"
+      CHAN_RECEIVE="->"
+  ]
+}
+
+// 注意顺序
+xidlFile ::= (comment | func_declaration | all_object  | operation)*
+
+private comment ::= LINE_COMMENT | BLOCK_COMMENT
+
+private meta comma_separated_list ::= <<param>> (","? <<param>>)* ","?
+private meta range_scope ::= "[" ((<<param>> "," <<param>>) | (<<param>> ",") | ("," <<param>>))? "]"
+
+meta block_meta ::= "{" <<param>> "}"
+
+private string_list ::= <<comma_separated_list STRING_LITERAL>>
+private key_value_list ::= <<comma_separated_list key_value>>
+private key_type_list ::= <<comma_separated_list key_type>>
+private operation_list ::= <<comma_separated_list operation>>
+
+private zero_param_anno ::= ZERO_PARAM_ANNOTATION
+private single_param_anno ::= SINGLE_PARAM_ANNOTATION STRING_LITERAL
+private multi_param_anno ::= MULTI_PARAM_ANNOTATION <<block_meta string_list>>
+// 做兼容处理，允许自定义注解
+private custom_anno ::= !ZERO_PARAM_ANNOTATION !SINGLE_PARAM_ANNOTATION !MULTI_PARAM_ANNOTATION CUSTOM_ANNOTATION (STRING_LITERAL | <<block_meta string_list>>)?
+
+private annotation ::= zero_param_anno | single_param_anno | multi_param_anno | custom_anno
+
+private text ::= IDENTIFIER | STRING_LITERAL
+private literal ::= INTEGER_LITERAL | FLOAT_LITERAL | BOOLEAN_LITERAL | STRING_LITERAL
+
+type_reference ::= IDENTIFIER {
+  methods=[getReference]
+}
+
+private data_type0 ::= SIMPLE_TYPE | type_reference
+private data_type ::= (<<range_scope INTEGER_LITERAL>>? ("*"? data_type0) <<range_scope INTEGER_LITERAL>>?)
+  | ("map" "<" data_type "," data_type ">")
+  | ("chan" ("<-" | "->") data_type)
+
+private key_value ::= annotation* text "=" literal
+private key_type ::= annotation* text "?"? ":" data_type ("=" literal)?
+
+func_name ::= IDENTIFIER
+private func_params ::= <<comma_separated_list func_param_group>>
+private func_param_group ::= IDENTIFIER ("," IDENTIFIER)* data_type
+private func_return ::= "(" <<comma_separated_list data_type>> ")"
+private func_declaration ::= annotation* ("func" | "xapi") func_name "(" func_params? ")" func_return?
+
+private key_value_list_block ::= <<block_meta key_value_list>>
+private key_type_list_block ::= <<block_meta key_type_list>>
+private string_List_block ::= <<block_meta string_list>>
+private operation_list_block ::= <<block_meta operation_list>>
+private mixed_block ::= <<block_meta (key_value_list | key_type_list | string_list | operation_list | common_object)*>>
+private empty_block ::= "{" "}"
+
+private meta text_empty_block_object ::= annotation* <<param>> text empty_block?
+
+// 是否考虑每种形式定义明确的语法规则？
+private cmd_object ::= annotation* "cmd" text <<block_meta (key_type_list | cmd_object)* >>?
+private def_object ::= annotation* "def" key_value_list_block
+private tag_object ::= annotation* "tag" text <<block_meta string_list?>>?
+private text_empty_object_key ::= "app" | "url" | "version" | "module" | "middleware" | "mcode" | "mname"
+private include_object ::= annotation* "include" <<block_meta string_list?>>
+private endpoints_object ::= annotation* "endpoints" (operation_list_block | empty_block)
+private mdepends_object ::= annotation* "mdepends" <<block_meta string_list?>>
+
+// TODO: 处理引用
+schema_name ::= text {
+  mixin="com.wps.cloud.xidl.language.psi.impl.XidlNamedElementImpl"
+  implements="com.wps.cloud.xidl.language.psi.XidlNamedElement"
+  methods=[getName setName getNameIdentifier]
+}
+schema_object ::= annotation* "schema" schema_name (key_value_list_block | key_type_list_block | empty_block)?
+
+private known_object_key ::= "cmd" | "def" | "tag" | text_empty_object_key | "func" | "xapi" | "schema" | "endpoints" | "mdepends" | "include"
+
+private common_object ::= annotation* (!known_object_key KEYWORD) text? (key_value_list_block | key_type_list_block | string_List_block | operation_list_block  | mixed_block)?
+
+private all_object ::= cmd_object | def_object | tag_object | (<<text_empty_block_object text_empty_object_key>>)
+                      | include_object | schema_object | endpoints_object | mdepends_object | common_object
+
+private http_path ::= ("/" (text | <<block_meta (key_type ","?)>>))+
+
+private http_query ::= "?" <<block_meta key_type_list>>
+private http_header ::= "!" <<block_meta key_type_list>>
+private http_cookie ::= "~" <<block_meta key_type_list>>
+private http_request_body ::= "." STRING_LITERAL? (data_type | <<block_meta key_type_list>>)
+private http_request_info ::= http_query | http_header | http_cookie | http_request_body
+
+private http_response_header ::= "!" http_header
+private http_status_and_response_body ::= INTEGER_LITERAL STRING_LITERAL? (data_type | <<block_meta key_type_list>>)?
+private http_response ::= http_response_header? http_status_and_response_body http_response_header?
+
+private operation ::= annotation* HTTP_METHOD http_path http_request_info* http_response ";"

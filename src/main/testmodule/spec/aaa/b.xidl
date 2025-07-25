@@ -1,0 +1,9 @@
+
+schema b1 {
+  greeting: string
+}
+
+schema b1 {
+  greeting: string
+  a: a1
+}

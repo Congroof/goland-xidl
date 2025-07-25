@@ -2,11 +2,14 @@ schema innerUser {
   age: int64
 }
 
+// region
 schema response_type {
   @desc "字段描述"
   field_name?:string
   inner:innerUser
 }
+
+// endregion
 
 @summary "接口概要"
 @desc "接口描述"

@@ -2,54 +2,75 @@
 <idea-plugin>
     <id>com.leibuyun.xidl</id>
     <name>Xidl Language Support</name>
+    <version>1.0.0</version>
     <vendor>leibuyun</vendor>
+
+    <description><![CDATA[
+        Support for Xidl language including syntax highlighting, code completion,
+        navigation, and other language features.
+        ]]></description>
+
 
     <depends>com.intellij.modules.platform</depends>
 
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
-        <!-- 文件类型注册 -->
-        <fileType name="Xidl"
-                  implementationClass="org.jetbrains.xidl.language.XidlFileType"
-                  fieldName="INSTANCE"
-                  language="Xidl"
-                  extensions="xidl"/>
-                  
-        <!-- 语法高亮器 -->
-        <lang.syntaxHighlighterFactory language="Xidl"
-                                     implementationClass="org.jetbrains.xidl.language.highlighting.XidlSyntaxHighlighterFactory"/>
-        <colorSettingsPage
-                implementation="org.jetbrains.xidl.language.highlighting.ColorSettingPage"/>
-        <lang.parserDefinition
-                language="Xidl"
-                implementationClass="org.jetbrains.xidl.language.XidlParserDefinition"/>
+        <fileType name="Xidl" implementationClass="com.wps.cloud.xidl.language.XidlFileType" fieldName="INSTANCE"
+                  language="Xidl" extensions="xidl"/>
 
-        <!-- 代码注释器 -->
+        <lang.syntaxHighlighterFactory language="Xidl"
+                                       implementationClass="com.wps.cloud.xidl.language.highlighting.XidlSyntaxHighlighterFactory"/>
+
+        <colorSettingsPage implementation="com.wps.cloud.xidl.language.highlighting.ColorSettingPage"/>
+
+        <lang.parserDefinition language="Xidl" implementationClass="com.wps.cloud.xidl.language.XidlParserDefinition"/>
+
+        <completion.contributor
+            language="Xidl"
+            implementationClass="com.wps.cloud.xidl.language.completion.XidlCompletionContributor"/>
+
         <lang.commenter
-                language="Xidl"
-                implementationClass="org.jetbrains.xidl.language.commenter.XidlCommenter"/>
+            language="Xidl"
+            implementationClass="com.wps.cloud.xidl.language.commenter.XidlCommenter"/>
 
         <lang.braceMatcher language="Xidl"
-                           implementationClass="org.jetbrains.xidl.language.brace.XidlBraceMatcher"/>
+                           implementationClass="com.wps.cloud.xidl.language.brace.XidlBraceMatcher"/>
 
         <annotator
-                language="Xidl"
-                implementationClass="org.jetbrains.xidl.language.annotator.XidlAnnotator"/>
-
-        <navbar implementation="org.jetbrains.xidl.language.XidlStructureAwareNavbar"/>
+            language="Xidl"
+            implementationClass="com.wps.cloud.xidl.language.annotator.XidlAnnotator"/>
 
         <lang.foldingBuilder
-                language="Xidl"
-                implementationClass="org.jetbrains.xidl.language.folding.XidlFoldingBuilder"/>
+            language="Xidl"
+            implementationClass="com.wps.cloud.xidl.language.folding.XidlFoldingBuilder"/>
 
-        <psi.referenceContributor language="Xidl"
-                                  implementation="org.jetbrains.xidl.language.reference.XidlReferenceContributor"/>
+        <langCodeStyleSettingsProvider
+            implementation="com.wps.cloud.xidl.language.formatting.XidlLanguageCodeStyleSettingsProvider"/>
 
-<!--        <lang.findUsagesProvider language="Xidl"-->
-<!--                implementationClass="org.jetbrains.xidl.language.reference.XidlFindUsageProvider"/>-->
+        <!-- 导航展示提供者 -->
+        <itemPresentationProvider
+            forClass="com.wps.cloud.xidl.language.psi.XidlSchemaName"
+            implementationClass="com.wps.cloud.xidl.language.navigation.XidlSchemaPresentationProvider"/>
 
-        <lang.elementManipulator forClass="org.jetbrains.xidl.language.psi.impl.XidlTypeReferenceImpl"
-                               implementationClass="org.jetbrains.xidl.language.reference.XidlTypeReferenceManipulator"/>
+
+        <!-- 代码格式化 -->
+<!--        <lang.formatter-->
+<!--            language="Xidl"-->
+<!--            implementationClass="com.wps.cloud.xidl.language.formatting.XidlFormattingModelBuilder"/>-->
+
+<!--        <psi.referenceContributor language="Xidl"-->
+<!--                                  implementation="com.wps.cloud.xidl.language.reference.XidlReferenceContributor"/>-->
+
+        <lang.findUsagesProvider language="Xidl"
+                implementationClass="com.wps.cloud.xidl.language.reference.XidlFindUsageProvider"/>
+
+        <lang.quoteHandler language="Xidl"
+                           implementationClass="com.wps.cloud.xidl.language.quote.XidlQuoteHandler"/>
+
+        <lang.elementManipulator forClass="com.wps.cloud.xidl.language.psi.impl.XidlTypeReferenceImpl"
+                                 implementationClass="com.wps.cloud.xidl.language.reference.XidlTypeReferenceManipulator"/>
+
+<!--        <include.provider implementation="com.wps.cloud.xidl.language.include.XidlFileIncludeProvider"/>-->
     </extensions>
 </idea-plugin>

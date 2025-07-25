@@ -1,0 +1,24 @@
+// region 测试区域
+@desc "获取公钥信息"
+@name "v7_get_privilege_pubkey"
+get /v7/privileges/pubkey
+  ? {
+    @desc "公钥格式, 默认default(base64), 可选项 default, pem, jwk"
+    type?: string
+  }
+  200 v7_privilege_pub
+;
+// regionend
+
+// 普通注释
+schema TestSchema {
+  id: int
+  name: string
+}
+
+// region 另一个测试区域
+func testFunc() (string)
+
+@desc "另一个测试函数"
+func anotherFunc(id int) (TestSchema)
+// endregion 
