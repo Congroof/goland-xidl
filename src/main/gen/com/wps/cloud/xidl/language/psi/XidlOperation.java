@@ -8,6 +8,9 @@ import com.intellij.psi.PsiElement;
 public interface XidlOperation extends PsiElement {
 
   @NotNull
+  List<XidlAnnoString> getAnnoStringList();
+
+  @NotNull
   List<XidlBlockMeta> getBlockMetaList();
 
   @NotNull

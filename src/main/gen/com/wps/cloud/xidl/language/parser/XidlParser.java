@@ -1352,13 +1352,14 @@ public class XidlParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // SINGLE_PARAM_ANNOTATION STRING_LITERAL
+  // SINGLE_PARAM_ANNOTATION anno_string
   static boolean single_param_anno(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "single_param_anno")) return false;
     if (!nextTokenIs(builder_, SINGLE_PARAM_ANNOTATION)) return false;
     boolean result_;
     Marker marker_ = enter_section_(builder_);
-    result_ = consumeTokens(builder_, 0, SINGLE_PARAM_ANNOTATION, STRING_LITERAL);
+    result_ = consumeToken(builder_, SINGLE_PARAM_ANNOTATION);
+    result_ = result_ && anno_string(builder_, level_ + 1);
     exit_section_(builder_, marker_, null, result_);
     return result_;
   }

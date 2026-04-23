@@ -29,6 +29,12 @@ public class XidlOperationImpl extends ASTWrapperPsiElement implements XidlOpera
 
   @Override
   @NotNull
+  public List<XidlAnnoString> getAnnoStringList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, XidlAnnoString.class);
+  }
+
+  @Override
+  @NotNull
   public List<XidlBlockMeta> getBlockMetaList() {
     return PsiTreeUtil.getChildrenOfTypeAsList(this, XidlBlockMeta.class);
   }

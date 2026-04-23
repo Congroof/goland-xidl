@@ -97,7 +97,10 @@ private key_type_list ::= <<comma_separated_list key_type>>
 private operation_list ::= <<comma_separated_list operation>>
 
 private zero_param_anno ::= ZERO_PARAM_ANNOTATION
-private single_param_anno ::= SINGLE_PARAM_ANNOTATION STRING_LITERAL
+// single_param_anno 里的字符串同样包一层 anno_string 成为独立 PSI 节点,
+// 让 `@name "foo"` 这类注解的字符串可以挂 PsiReference (如 Ctrl+Click 跳转到
+// modules/impl/${name}.go), 参见 XidlAnnoStringMixin 内的分派逻辑。
+private single_param_anno ::= SINGLE_PARAM_ANNOTATION anno_string
 // multi_param_anno 里的字符串包一层 anno_string 成为独立 PSI 节点,
 // 通过 mixin 直接实现 getReference() (Ctrl+Click 跳转 / Find Usages)。
 // 用 mixin 而不是 PsiReferenceContributor + pattern(STRING_LITERAL) 的原因:

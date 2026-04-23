@@ -39,6 +39,26 @@
             language="Xidl"
             implementationClass="com.wps.cloud.xidl.language.folding.XidlFoldingBuilder"/>
 
+        <!-- Structure View (Cmd+7 / Alt+7) 展示文件里的 schema / operation / func -->
+        <lang.psiStructureViewFactory
+            language="Xidl"
+            implementationClass="com.wps.cloud.xidl.language.structure.XidlStructureViewFactory"/>
+
+        <!-- Breadcrumbs (编辑器顶部面包屑): endpoints > POST /api/v1/.. > ? query -->
+        <breadcrumbsInfoProvider
+            implementation="com.wps.cloud.xidl.language.breadcrumbs.XidlBreadcrumbsProvider"/>
+
+        <!-- Gutter 图标: `@name "xxx"` 左侧显示 "跳转到实现" 箭头, 指向
+             modules/impl/http/xxx.go, 与 XidlModuleImplReference 复用同一解析逻辑 -->
+        <codeInsight.lineMarkerProvider
+            language="Xidl"
+            implementationClass="com.wps.cloud.xidl.language.marker.XidlLineMarkerProvider"/>
+
+        <!-- 悬浮文档 / Ctrl+Q: schema 引用处弹出定义内容 (字段+注解), 免跳转 -->
+        <lang.documentationProvider
+            language="Xidl"
+            implementationClass="com.wps.cloud.xidl.language.documentation.XidlDocumentationProvider"/>
+
         <langCodeStyleSettingsProvider
             implementation="com.wps.cloud.xidl.language.formatting.XidlLanguageCodeStyleSettingsProvider"/>
 
