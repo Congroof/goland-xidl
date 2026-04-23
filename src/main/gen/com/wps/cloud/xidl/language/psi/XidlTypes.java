@@ -8,8 +8,16 @@ import com.wps.cloud.xidl.language.psi.impl.*;
 
 public interface XidlTypes {
 
+  IElementType ANNO_STRING = new XidlElementType("ANNO_STRING");
   IElementType BLOCK_META = new XidlElementType("BLOCK_META");
   IElementType FUNC_NAME = new XidlElementType("FUNC_NAME");
+  IElementType HTTP_COOKIE = new XidlElementType("HTTP_COOKIE");
+  IElementType HTTP_HEADER = new XidlElementType("HTTP_HEADER");
+  IElementType HTTP_QUERY = new XidlElementType("HTTP_QUERY");
+  IElementType HTTP_REQUEST_BODY = new XidlElementType("HTTP_REQUEST_BODY");
+  IElementType HTTP_RESPONSE = new XidlElementType("HTTP_RESPONSE");
+  IElementType INCLUDE_PATH = new XidlElementType("INCLUDE_PATH");
+  IElementType OPERATION = new XidlElementType("OPERATION");
   IElementType SCHEMA_NAME = new XidlElementType("SCHEMA_NAME");
   IElementType SCHEMA_OBJECT = new XidlElementType("SCHEMA_OBJECT");
   IElementType TYPE_REFERENCE = new XidlElementType("TYPE_REFERENCE");
@@ -17,6 +25,7 @@ public interface XidlTypes {
   IElementType ASSIGN = new XidlTokenType("=");
   IElementType BLOCK_COMMENT = new XidlTokenType("BLOCK_COMMENT");
   IElementType BOOLEAN_LITERAL = new XidlTokenType("BOOLEAN_LITERAL");
+  IElementType CHAN = new XidlTokenType("chan");
   IElementType CHAN_RECEIVE = new XidlTokenType("->");
   IElementType CHAN_SEND = new XidlTokenType("<-");
   IElementType COLON = new XidlTokenType(":");
@@ -34,6 +43,7 @@ public interface XidlTypes {
   IElementType LBRACKET = new XidlTokenType("[");
   IElementType LINE_COMMENT = new XidlTokenType("LINE_COMMENT");
   IElementType LPAREN = new XidlTokenType("(");
+  IElementType MAP = new XidlTokenType("map");
   IElementType MULTIPLY = new XidlTokenType("*");
   IElementType MULTI_PARAM_ANNOTATION = new XidlTokenType("MULTI_PARAM_ANNOTATION");
   IElementType QUESTION = new XidlTokenType("?");
@@ -50,11 +60,35 @@ public interface XidlTypes {
   class Factory {
     public static PsiElement createElement(ASTNode node) {
       IElementType type = node.getElementType();
-      if (type == BLOCK_META) {
+      if (type == ANNO_STRING) {
+        return new XidlAnnoStringImpl(node);
+      }
+      else if (type == BLOCK_META) {
         return new XidlBlockMetaImpl(node);
       }
       else if (type == FUNC_NAME) {
         return new XidlFuncNameImpl(node);
+      }
+      else if (type == HTTP_COOKIE) {
+        return new XidlHttpCookieImpl(node);
+      }
+      else if (type == HTTP_HEADER) {
+        return new XidlHttpHeaderImpl(node);
+      }
+      else if (type == HTTP_QUERY) {
+        return new XidlHttpQueryImpl(node);
+      }
+      else if (type == HTTP_REQUEST_BODY) {
+        return new XidlHttpRequestBodyImpl(node);
+      }
+      else if (type == HTTP_RESPONSE) {
+        return new XidlHttpResponseImpl(node);
+      }
+      else if (type == INCLUDE_PATH) {
+        return new XidlIncludePathImpl(node);
+      }
+      else if (type == OPERATION) {
+        return new XidlOperationImpl(node);
       }
       else if (type == SCHEMA_NAME) {
         return new XidlSchemaNameImpl(node);

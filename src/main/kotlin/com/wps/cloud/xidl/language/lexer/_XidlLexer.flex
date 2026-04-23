@@ -31,12 +31,12 @@ INTEGER_LITERAL=[0-9]+
 FLOAT_LITERAL=[0-9]+\.[0-9]+
 BOOLEAN_LITERAL=true|false
 STRING_LITERAL=(\"[^\"\n]*\")|(`[^`]*`)
-SIMPLE_TYPE=byte|int|int8|int16|int32|int64|uint|uint8|uint16|uint32|uint64|float32|float64|bool|string|datetime|any|map|chan|interface
-KEYWORD=cmd|def|tag|app|url|version|module|include|schema|endpoints|middleware|mcode|mname|mdepends|func|xapi
+SIMPLE_TYPE=byte|int|int8|int16|int32|int64|uint|uint8|uint16|uint32|uint64|float32|float64|bool|string|datetime|any|interface|RawMessage
+KEYWORD=cmd|def|tag|app|url|version|module|include|schema|endpoints|middleware|mcode|mname|mdepends|func|xapi|server|interceptors
 HTTP_METHOD=get|post|put|patch|delete|options|head
-ZERO_PARAM_ANNOTATION=@(noescape|deprecated|omitempty|pflag|pflagenv|order|nowrap|nodoc|nonstandard|external|i18n)
-SINGLE_PARAM_ANNOTATION=@(desc|title|summary|table|column|template|format|name|use|short|shorthand|long|min|server|parent|type|xtype|etype|level|timeout)
-MULTI_PARAM_ANNOTATION=@(tags|allof|oneof|anyof|middlewares|middleware_replace_map|x|permissions|aliases|scopes|identities|accountTags|companyTypes)
+ZERO_PARAM_ANNOTATION=@(noescape|deprecated|omitempty|pflag|pflagenv|order|nowrap|nodoc|nonstandard|external|i18n|norouter|approval_supported)
+SINGLE_PARAM_ANNOTATION=@(desc|title|summary|table|column|template|format|name|use|short|shorthand|long|min|server|parent|type|xtype|etype|level|timeout|register_gateway_with_auth|register_admin_with_auth|prefix)
+MULTI_PARAM_ANNOTATION=@(tags|allof|oneof|anyof|middlewares|middleware_replace_map|x|permissions|aliases|scopes|identities|accountTags|companyTypes|prefix_server)
 CUSTOM_ANNOTATION=@[a-zA-Z_][a-zA-Z0-9_]*
 IDENTIFIER=[a-zA-Z_][a-zA-Z0-9_]*
 
@@ -44,6 +44,8 @@ IDENTIFIER=[a-zA-Z_][a-zA-Z0-9_]*
 <YYINITIAL> {
   {WHITE_SPACE}                   { return WHITE_SPACE; }
 
+  "map"                           { return MAP; }
+  "chan"                          { return CHAN; }
   "("                             { return LPAREN; }
   ")"                             { return RPAREN; }
   "{"                             { return LBRACE; }

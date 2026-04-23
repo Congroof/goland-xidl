@@ -11,14 +11,14 @@ import static com.wps.cloud.xidl.language.psi.XidlTypes.*;
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import com.wps.cloud.xidl.language.psi.*;
 
-public class XidlSchemaObjectImpl extends ASTWrapperPsiElement implements XidlSchemaObject {
+public class XidlHttpRequestBodyImpl extends ASTWrapperPsiElement implements XidlHttpRequestBody {
 
-  public XidlSchemaObjectImpl(@NotNull ASTNode node) {
+  public XidlHttpRequestBodyImpl(@NotNull ASTNode node) {
     super(node);
   }
 
   public void accept(@NotNull XidlVisitor visitor) {
-    visitor.visitSchemaObject(this);
+    visitor.visitHttpRequestBody(this);
   }
 
   @Override
@@ -28,15 +28,27 @@ public class XidlSchemaObjectImpl extends ASTWrapperPsiElement implements XidlSc
   }
 
   @Override
-  @NotNull
-  public List<XidlBlockMeta> getBlockMetaList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, XidlBlockMeta.class);
+  @Nullable
+  public XidlBlockMeta getBlockMeta() {
+    return findChildByClass(XidlBlockMeta.class);
   }
 
   @Override
   @Nullable
-  public XidlSchemaName getSchemaName() {
-    return findChildByClass(XidlSchemaName.class);
+  public XidlTypeReference getTypeReference() {
+    return findChildByClass(XidlTypeReference.class);
+  }
+
+  @Override
+  @Nullable
+  public PsiElement getSimpleType() {
+    return findChildByType(SIMPLE_TYPE);
+  }
+
+  @Override
+  @Nullable
+  public PsiElement getStringLiteral() {
+    return findChildByType(STRING_LITERAL);
   }
 
 }

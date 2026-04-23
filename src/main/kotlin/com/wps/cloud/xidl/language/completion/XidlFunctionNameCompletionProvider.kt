@@ -22,8 +22,6 @@ class XidlFunctionNameCompletionProvider : CompletionProvider<CompletionParamete
             PsiTreeUtil.findChildrenOfType(it, XidlSchemaName::class.java)
         } ?: emptyList()
 
-        println(localSchemas.size)
-
         for (schema in localSchemas) {
             resultSet.addElement(
                 LookupElementBuilder.create(schema.text)
@@ -46,11 +44,11 @@ class XidlFunctionNameCompletionProvider : CompletionProvider<CompletionParamete
             }
         }
 
-        // 添加简单类型
         val simpleTypes = listOf(
             "byte", "int", "int8", "int16", "int32", "int64",
             "uint", "uint8", "uint16", "uint32", "uint64",
             "float32", "float64", "bool", "string", "datetime",
+            "any", "map", "chan", "interface", "RawMessage"
         )
 
         for (type in simpleTypes) {

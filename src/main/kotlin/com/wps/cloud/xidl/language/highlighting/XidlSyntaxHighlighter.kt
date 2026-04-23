@@ -22,6 +22,18 @@ class XidlSyntaxHighlighter : SyntaxHighlighterBase() {
             "XIDL_KEYWORD",
             DefaultLanguageHighlighterColors.KEYWORD
         )
+        val HTTP_METHOD = TextAttributesKey.createTextAttributesKey(
+            "XIDL_HTTP_METHOD",
+            DefaultLanguageHighlighterColors.KEYWORD
+        )
+        val BUILTIN_TYPE = TextAttributesKey.createTextAttributesKey(
+            "XIDL_BUILTIN_TYPE",
+            DefaultLanguageHighlighterColors.KEYWORD
+        )
+        val BOOLEAN = TextAttributesKey.createTextAttributesKey(
+            "XIDL_BOOLEAN",
+            DefaultLanguageHighlighterColors.KEYWORD
+        )
         val IDENTIFIER = TextAttributesKey.createTextAttributesKey(
             "XIDL_IDENTIFIER",
             DefaultLanguageHighlighterColors.IDENTIFIER
@@ -36,13 +48,21 @@ class XidlSyntaxHighlighter : SyntaxHighlighterBase() {
             DefaultLanguageHighlighterColors.NUMBER
         )
 
-        // 括号
         val BRACES = TextAttributesKey.createTextAttributesKey(
             "XIDL_BRACES",
             DefaultLanguageHighlighterColors.BRACES
         )
 
-        // 注解
+        val BRACKETS = TextAttributesKey.createTextAttributesKey(
+            "XIDL_BRACKETS",
+            DefaultLanguageHighlighterColors.BRACKETS
+        )
+
+        val PARENTHESES = TextAttributesKey.createTextAttributesKey(
+            "XIDL_PARENTHESES",
+            DefaultLanguageHighlighterColors.PARENTHESES
+        )
+
         val ANNOTATION = TextAttributesKey.createTextAttributesKey(
             "XIDL_ANNOTATION",
             DefaultLanguageHighlighterColors.METADATA
@@ -53,6 +73,21 @@ class XidlSyntaxHighlighter : SyntaxHighlighterBase() {
             DefaultLanguageHighlighterColors.OPERATION_SIGN
         )
 
+        val SEMICOLON = TextAttributesKey.createTextAttributesKey(
+            "XIDL_SEMICOLON",
+            DefaultLanguageHighlighterColors.SEMICOLON
+        )
+
+        val COMMA = TextAttributesKey.createTextAttributesKey(
+            "XIDL_COMMA",
+            DefaultLanguageHighlighterColors.COMMA
+        )
+
+        val DOT = TextAttributesKey.createTextAttributesKey(
+            "XIDL_DOT",
+            DefaultLanguageHighlighterColors.DOT
+        )
+
         private val EMPTY_KEYS = arrayOf<TextAttributesKey>()
     }
 
@@ -61,30 +96,33 @@ class XidlSyntaxHighlighter : SyntaxHighlighterBase() {
     override fun getTokenHighlights(tokenType: IElementType): Array<TextAttributesKey> {
 
         return when (tokenType) {
-            // 注释
             XidlTypes.LINE_COMMENT -> pack(LINE_COMMENT)
             XidlTypes.BLOCK_COMMENT -> pack(BLOCK_COMMENT)
 
-            // 字面量
             XidlTypes.STRING_LITERAL -> pack(STRING)
             XidlTypes.INTEGER_LITERAL, XidlTypes.FLOAT_LITERAL -> pack(NUMBER)
+            XidlTypes.BOOLEAN_LITERAL -> pack(BOOLEAN)
 
-            // 关键字
-            XidlTypes.HTTP_METHOD, XidlTypes.SIMPLE_TYPE, XidlTypes.KEYWORD -> pack(KEYWORD)
+            XidlTypes.KEYWORD -> pack(KEYWORD)
+            XidlTypes.HTTP_METHOD -> pack(HTTP_METHOD)
+            XidlTypes.SIMPLE_TYPE, XidlTypes.MAP, XidlTypes.CHAN -> pack(BUILTIN_TYPE)
 
-            // 标识符
             XidlTypes.IDENTIFIER -> pack(IDENTIFIER)
 
-            // 括号
-            XidlTypes.LPAREN, XidlTypes.RPAREN, XidlTypes.LBRACE, XidlTypes.RBRACE,
-                XidlTypes.LBRACKET, XidlTypes.RBRACKET -> pack(BRACES)
+            XidlTypes.LBRACE, XidlTypes.RBRACE -> pack(BRACES)
+            XidlTypes.LBRACKET, XidlTypes.RBRACKET -> pack(BRACKETS)
+            XidlTypes.LPAREN, XidlTypes.RPAREN -> pack(PARENTHESES)
 
-            // 注解
             XidlTypes.CUSTOM_ANNOTATION, XidlTypes.ZERO_PARAM_ANNOTATION,
                 XidlTypes.SINGLE_PARAM_ANNOTATION, XidlTypes.MULTI_PARAM_ANNOTATION -> pack(ANNOTATION)
 
-            // 符号
-            XidlTypes.SEMICOLON, XidlTypes.CHAN_SEND, XidlTypes.CHAN_RECEIVE -> pack(SIGN)
+            XidlTypes.SEMICOLON -> pack(SEMICOLON)
+            XidlTypes.COMMA -> pack(COMMA)
+            XidlTypes.DOT -> pack(DOT)
+            XidlTypes.CHAN_SEND, XidlTypes.CHAN_RECEIVE,
+                XidlTypes.MULTIPLY, XidlTypes.DIVIDE, XidlTypes.QUESTION,
+                XidlTypes.ASSIGN, XidlTypes.LANGLE, XidlTypes.RANGLE,
+                XidlTypes.COLON -> pack(SIGN)
 
             else -> EMPTY_KEYS
         }

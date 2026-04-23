@@ -4,7 +4,6 @@ import com.intellij.extapi.psi.ASTWrapperPsiElement
 import com.intellij.lang.ASTNode
 import com.intellij.navigation.ItemPresentation
 import com.intellij.navigation.NavigationItem
-import com.intellij.openapi.util.Iconable
 import com.intellij.psi.PsiElement
 import com.intellij.util.PlatformIcons
 import com.wps.cloud.xidl.language.psi.XidlNamedElement
@@ -12,13 +11,29 @@ import javax.swing.Icon
 
 /**
  * XIDL 命名元素基础实现
- * 支持在导航时显示绝对路径
+ * - 实现 PsiNameIdentifierOwner 契约 (getName / setName / getNameIdentifier)
+ * - 支持在导航时显示带路径的 ItemPresentation
  */
 abstract class XidlNamedElementImpl(node: ASTNode) : ASTWrapperPsiElement(node), XidlNamedElement, NavigationItem {
 
-    override fun getPresentation(): ItemPresentation? {
-        return XidlItemPresentation(this)
+    override fun getName(): String? = node.text
+
+    override fun setName(newName: String): PsiElement {
+        val identifierRegex = Regex("^[a-zA-Z_][a-zA-Z0-9_]*$")
+        if (newName.isEmpty() || !identifierRegex.matches(newName)) {
+            throw IllegalArgumentException("Invalid identifier: $newName")
+        }
+        val replacement = XidlPsiImplUtil.createSchemaNameIdentifier(project, newName) ?: return this
+        val oldLeaf = firstChild
+        if (oldLeaf != null) {
+            node.replaceChild(oldLeaf.node, replacement.node)
+        }
+        return this
     }
+
+    override fun getNameIdentifier(): PsiElement = firstChild ?: this
+
+    override fun getPresentation(): ItemPresentation = XidlItemPresentation(this)
 
     override fun getNavigationElement(): PsiElement = this
 

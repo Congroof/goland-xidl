@@ -41,18 +41,21 @@ class XidlKeywordCompletionProvider : CompletionProvider<CompletionParameters>()
     private fun addAnnotationCompletions(resultSet: CompletionResultSet, afterAtSymbol: Boolean) {
         val zeroParamAnnotations = listOf(
             "noescape", "deprecated", "omitempty", "pflag", "pflagenv",
-            "order", "nowrap", "nodoc", "nonstandard", "external", "i18n"
+            "order", "nowrap", "nodoc", "nonstandard", "external", "i18n",
+            "norouter", "approval_supported"
         )
 
         val singleParamAnnotations = listOf(
             "desc", "title", "summary", "table", "column", "template", "format",
             "name", "use", "short", "shorthand", "long", "min", "server",
-            "parent", "type", "xtype", "etype", "level", "timeout"
+            "parent", "type", "xtype", "etype", "level", "timeout",
+            "prefix", "register_gateway_with_auth", "register_admin_with_auth"
         )
 
         val multiParamAnnotations = listOf(
             "tags", "allof", "oneof", "anyof", "middlewares", "middleware_replace_map",
-            "x", "permissions", "aliases", "scopes", "identities", "accountTags", "companyTypes"
+            "x", "permissions", "aliases", "scopes", "identities", "accountTags", "companyTypes",
+            "prefix_server"
         )
 
         for (annotation in zeroParamAnnotations) {

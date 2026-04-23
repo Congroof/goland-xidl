@@ -1,4 +1,4 @@
-rootProject.name = "IntelliJ Platform Plugin Template"
+rootProject.name = "xidl"
 
 pluginManagement {
     repositories {

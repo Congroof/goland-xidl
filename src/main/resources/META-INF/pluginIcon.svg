@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40" fill="none" aria-label="Xidl Language">
+  <rect width="40" height="40" rx="8" fill="#0F766E"/>
+  <path d="M12 12L28 28M28 12L12 28" stroke="#ECFEFF" stroke-width="3" stroke-linecap="round"/>
+  <path d="M20 8v4M20 28v4M8 20h4M28 20h4" stroke="#5EEAD4" stroke-width="2" stroke-linecap="round" opacity="0.85"/>
+</svg>

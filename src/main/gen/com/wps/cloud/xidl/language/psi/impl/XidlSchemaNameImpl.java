@@ -12,7 +12,7 @@ import com.wps.cloud.xidl.language.psi.*;
 
 public class XidlSchemaNameImpl extends XidlNamedElementImpl implements XidlSchemaName {
 
-  public XidlSchemaNameImpl(@NotNull ASTNode node) {
+  public XidlSchemaNameImpl(ASTNode node) {
     super(node);
   }
 
@@ -36,24 +36,6 @@ public class XidlSchemaNameImpl extends XidlNamedElementImpl implements XidlSche
   @Nullable
   public PsiElement getStringLiteral() {
     return findChildByType(STRING_LITERAL);
-  }
-
-  @Override
-  @NotNull
-  public String getName() {
-    return XidlPsiImplUtil.getName(this);
-  }
-
-  @Override
-  @NotNull
-  public PsiElement setName(@NotNull String newName) {
-    return XidlPsiImplUtil.setName(this, newName);
-  }
-
-  @Override
-  @NotNull
-  public PsiElement getNameIdentifier() {
-    return XidlPsiImplUtil.getNameIdentifier(this);
   }
 
 }

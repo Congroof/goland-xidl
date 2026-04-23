@@ -24,13 +24,16 @@
       BOOLEAN_LITERAL="regexp:true|false"
       STRING_LITERAL="regexp:(\"[^\"\n]*\")|(`[^`]*`)"
 
-      SIMPLE_TYPE="regexp:byte|int|int8|int16|int32|int64|uint|uint8|uint16|uint32|uint64|float32|float64|bool|string|datetime|any|map|chan|interface"
-      KEYWORD="regexp:cmd|def|tag|app|url|version|module|include|schema|endpoints|middleware|mcode|mname|mdepends|func|xapi"
+      SIMPLE_TYPE="regexp:byte|int|int8|int16|int32|int64|uint|uint8|uint16|uint32|uint64|float32|float64|bool|string|datetime|any|interface|RawMessage"
+      MAP="map"
+      CHAN="chan"
+      KEYWORD="regexp:cmd|def|tag|app|url|version|module|include|schema|endpoints|middleware|mcode|mname|mdepends|func|xapi|server|interceptors"
       HTTP_METHOD="regexp:get|post|put|patch|delete|options|head"
 
-      ZERO_PARAM_ANNOTATION="regexp:@(noescape|deprecated|omitempty|pflag|pflagenv|order|nowrap|nodoc|nonstandard|external|i18n)"
-      SINGLE_PARAM_ANNOTATION="regexp:@(desc|title|summary|table|column|template|format|name|use|short|shorthand|long|min|server|parent|type|xtype|etype|level|timeout)"
-      MULTI_PARAM_ANNOTATION="regexp:@(tags|allof|oneof|anyof|middlewares|middleware_replace_map|x|permissions|aliases|scopes|identities|accountTags|companyTypes)"
+      // 注意：注解 regex 的交替分支需把长串写在前面，避免 @prefix_server 被误识别为 @prefix
+      ZERO_PARAM_ANNOTATION="regexp:@(noescape|deprecated|omitempty|pflag|pflagenv|order|nowrap|nodoc|nonstandard|external|i18n|norouter|approval_supported)"
+      SINGLE_PARAM_ANNOTATION="regexp:@(desc|title|summary|table|column|template|format|name|use|short|shorthand|long|min|server|parent|type|xtype|etype|level|timeout|register_gateway_with_auth|register_admin_with_auth|prefix)"
+      MULTI_PARAM_ANNOTATION="regexp:@(tags|allof|oneof|anyof|middlewares|middleware_replace_map|x|permissions|aliases|scopes|identities|accountTags|companyTypes|prefix_server)"
       CUSTOM_ANNOTATION="regexp:@[a-zA-Z_][a-zA-Z0-9_]*"
 
       IDENTIFIER="regexp:[a-zA-Z_][a-zA-Z0-9_]*"
@@ -57,7 +60,29 @@
 }
 
 // 注意顺序
-xidlFile ::= (comment | func_declaration | all_object  | operation)*
+// 顶层每一条语句都带 recoverWhile, 使得局部语法错误不会影响到其它顶层结构的解析:
+//   - 单个 schema/cmd/operation 内部写错时, parser 会在遇到下一个"看起来像顶层起点"的
+//     token 时恢复, 继续把后续语句解析成正确的 PSI 节点;
+//   - 错误只被 localize 到出错的那一条语句, 其它 schema 的高亮 / 跳转 / Find Usages
+//     保持可用, 编辑体验不会雪崩。
+xidlFile ::= top_level_item*
+
+private top_level_item ::= comment | func_declaration | all_object | operation {
+  recoverWhile=top_level_recover
+}
+
+// 只要当前 token 不是一个"看起来像顶层语句起点"的 token, 就继续跳过直到遇到同步点。
+private top_level_recover ::= !top_level_start
+
+// 可以作为顶层语句起点的 token 集合 (用于错误恢复的同步点)。
+private top_level_start ::= KEYWORD
+  | HTTP_METHOD
+  | ZERO_PARAM_ANNOTATION
+  | SINGLE_PARAM_ANNOTATION
+  | MULTI_PARAM_ANNOTATION
+  | CUSTOM_ANNOTATION
+  | LINE_COMMENT
+  | BLOCK_COMMENT
 
 private comment ::= LINE_COMMENT | BLOCK_COMMENT
 
@@ -73,32 +98,49 @@ private operation_list ::= <<comma_separated_list operation>>
 
 private zero_param_anno ::= ZERO_PARAM_ANNOTATION
 private single_param_anno ::= SINGLE_PARAM_ANNOTATION STRING_LITERAL
-private multi_param_anno ::= MULTI_PARAM_ANNOTATION <<block_meta string_list>>
+// multi_param_anno 里的字符串包一层 anno_string 成为独立 PSI 节点,
+// 通过 mixin 直接实现 getReference() (Ctrl+Click 跳转 / Find Usages)。
+// 用 mixin 而不是 PsiReferenceContributor + pattern(STRING_LITERAL) 的原因:
+// 后者在 leaf token 上不总是被 platform 的 findReferenceAt 流程触发。
+private multi_param_anno ::= MULTI_PARAM_ANNOTATION <<block_meta anno_string_list>>
+private anno_string_list ::= <<comma_separated_list anno_string>>
+anno_string ::= STRING_LITERAL {
+  mixin="com.wps.cloud.xidl.language.psi.impl.XidlAnnoStringMixin"
+}
 // 做兼容处理，允许自定义注解
-private custom_anno ::= !ZERO_PARAM_ANNOTATION !SINGLE_PARAM_ANNOTATION !MULTI_PARAM_ANNOTATION CUSTOM_ANNOTATION (STRING_LITERAL | <<block_meta string_list>>)?
+private custom_anno ::= !ZERO_PARAM_ANNOTATION !SINGLE_PARAM_ANNOTATION !MULTI_PARAM_ANNOTATION CUSTOM_ANNOTATION (STRING_LITERAL | <<block_meta anno_string_list>>)?
 
 private annotation ::= zero_param_anno | single_param_anno | multi_param_anno | custom_anno
 
 private text ::= IDENTIFIER | STRING_LITERAL
 private literal ::= INTEGER_LITERAL | FLOAT_LITERAL | BOOLEAN_LITERAL | STRING_LITERAL
 
+// getReference 由 mixin 基类直接实现（见 XidlTypeReferenceMixin）。
+// 不用 methods=[getReference] 的原因：Gradle 下 generateParser 比 compileKotlin
+// 先跑，Grammar-Kit 在 classpath 里找不到 Kotlin 实现的 psiImplUtilClass 方法。
 type_reference ::= IDENTIFIER {
-  methods=[getReference]
+  mixin="com.wps.cloud.xidl.language.psi.impl.XidlTypeReferenceMixin"
 }
 
 private data_type0 ::= SIMPLE_TYPE | type_reference
-private data_type ::= (<<range_scope INTEGER_LITERAL>>? ("*"? data_type0) <<range_scope INTEGER_LITERAL>>?)
-  | ("map" "<" data_type "," data_type ">")
-  | ("chan" ("<-" | "->") data_type)
+// 允许顶层方向符前置：<- T (recv-only), -> T (send-only)
+private data_type ::= ("<-" | "->")? data_type_body
+private data_type_body ::= (<<range_scope INTEGER_LITERAL>>? ("*"? data_type0) <<range_scope INTEGER_LITERAL>>?)
+  | (MAP ("<" data_type "," data_type ">")?)
+  | (CHAN data_type)
 
-private key_value ::= annotation* text "=" literal
+// 支持两种形式: `name = value` 命名常量；以及 parser.y 中允许的裸字面量(仅字符串/整数)
+private key_value ::= annotation* ((text "=" literal) | STRING_LITERAL | INTEGER_LITERAL)
 private key_type ::= annotation* text "?"? ":" data_type ("=" literal)?
 
 func_name ::= IDENTIFIER
 private func_params ::= <<comma_separated_list func_param_group>>
 private func_param_group ::= IDENTIFIER ("," IDENTIFIER)* data_type
 private func_return ::= "(" <<comma_separated_list data_type>> ")"
-private func_declaration ::= annotation* ("func" | "xapi") func_name "(" func_params? ")" func_return?
+// pin=2: 一旦识别到 func / xapi 关键字, 就锁定这是 func_declaration,
+// 即便后续参数 / 返回值部分写错了, 也会生成带错误标记的节点, 不会把
+// 整条语句丢失 (避免出错时整行消失或被解析成别的规则)。
+private func_declaration ::= annotation* ("func" | "xapi") func_name "(" func_params? ")" func_return? { pin=2 }
 
 private key_value_list_block ::= <<block_meta key_value_list>>
 private key_type_list_block ::= <<block_meta key_type_list>>
@@ -109,40 +151,57 @@ private empty_block ::= "{" "}"
 
 private meta text_empty_block_object ::= annotation* <<param>> text empty_block?
 
+// 每个顶层 object 规则都用 pin=2 固定在关键字处, body 出错时节点仍然被保留。
 // 是否考虑每种形式定义明确的语法规则？
-private cmd_object ::= annotation* "cmd" text <<block_meta (key_type_list | cmd_object)* >>?
-private def_object ::= annotation* "def" key_value_list_block
-private tag_object ::= annotation* "tag" text <<block_meta string_list?>>?
+private cmd_object ::= annotation* "cmd" text <<block_meta (key_type_list | cmd_object)* >>? { pin=2 }
+private def_object ::= annotation* "def" key_value_list_block { pin=2 }
+private tag_object ::= annotation* "tag" text <<block_meta string_list?>>? { pin=2 }
 private text_empty_object_key ::= "app" | "url" | "version" | "module" | "middleware" | "mcode" | "mname"
-private include_object ::= annotation* "include" <<block_meta string_list?>>
-private endpoints_object ::= annotation* "endpoints" (operation_list_block | empty_block)
-private mdepends_object ::= annotation* "mdepends" <<block_meta string_list?>>
+// include 里的字符串是文件路径, 包一层 include_path 独立 PSI 节点 +
+// mixin 挂 FileReferenceSet 引用 (与 anno_string 同样的思路)。
+// 这样 Ctrl+Click 可跳转到被 include 的具体文件, 且多段路径 a/b.xidl 各段都可独立跳转。
+private include_path_list ::= <<comma_separated_list include_path>>
+include_path ::= STRING_LITERAL {
+  mixin="com.wps.cloud.xidl.language.psi.impl.XidlIncludePathMixin"
+}
+private include_object ::= annotation* "include" <<block_meta include_path_list?>> { pin=2 }
+private endpoints_object ::= annotation* "endpoints" (operation_list_block | empty_block) { pin=2 }
+private mdepends_object ::= annotation* "mdepends" <<block_meta string_list?>> { pin=2 }
 
 // TODO: 处理引用
+// getName / setName / getNameIdentifier 已由 mixin (XidlNamedElementImpl) 提供
 schema_name ::= text {
   mixin="com.wps.cloud.xidl.language.psi.impl.XidlNamedElementImpl"
   implements="com.wps.cloud.xidl.language.psi.XidlNamedElement"
-  methods=[getName setName getNameIdentifier]
 }
-schema_object ::= annotation* "schema" schema_name (key_value_list_block | key_type_list_block | empty_block)?
+// pin=2: schema 关键字匹配后即锁定为 schema_object, body 内部错误不会
+// 导致 schema_object 节点消失 —— 这直接保障了外部对 schema 的引用解析、
+// Find Usages 在有未完成编辑时仍然可用。
+schema_object ::= annotation* "schema" schema_name (key_value_list_block | key_type_list_block | empty_block)? { pin=2 }
 
 private known_object_key ::= "cmd" | "def" | "tag" | text_empty_object_key | "func" | "xapi" | "schema" | "endpoints" | "mdepends" | "include"
 
-private common_object ::= annotation* (!known_object_key KEYWORD) text? (key_value_list_block | key_type_list_block | string_List_block | operation_list_block  | mixed_block)?
+// pin=2: KEYWORD 匹配后即锁定, 后续 body 出错不拆散整个 common_object。
+private common_object ::= annotation* (!known_object_key KEYWORD) text? (key_value_list_block | key_type_list_block | string_List_block | operation_list_block  | mixed_block)? { pin=2 }
 
 private all_object ::= cmd_object | def_object | tag_object | (<<text_empty_block_object text_empty_object_key>>)
                       | include_object | schema_object | endpoints_object | mdepends_object | common_object
 
 private http_path ::= ("/" (text | <<block_meta (key_type ","?)>>))+
 
-private http_query ::= "?" <<block_meta key_type_list>>
-private http_header ::= "!" <<block_meta key_type_list>>
-private http_cookie ::= "~" <<block_meta key_type_list>>
-private http_request_body ::= "." STRING_LITERAL? (data_type | <<block_meta key_type_list>>)
+// 下面几条原本都是 private, 改成 composite (去掉 private 前缀), 让 formatter
+// 能识别"请求信息段"边界 (换行 + 缩进) —— 没有独立 PSI 节点就无法在 Block
+// 层面表达"? { ... } 相对 operation 缩进一级"这种规则。
+http_query ::= "?" <<block_meta key_type_list>>
+http_header ::= "!" <<block_meta key_type_list>>
+http_cookie ::= "~" <<block_meta key_type_list>>
+http_request_body ::= "." STRING_LITERAL? (data_type | <<block_meta key_type_list>>)
 private http_request_info ::= http_query | http_header | http_cookie | http_request_body
 
 private http_response_header ::= "!" http_header
 private http_status_and_response_body ::= INTEGER_LITERAL STRING_LITERAL? (data_type | <<block_meta key_type_list>>)?
-private http_response ::= http_response_header? http_status_and_response_body http_response_header?
+http_response ::= http_response_header? http_status_and_response_body http_response_header?
 
-private operation ::= annotation* HTTP_METHOD http_path http_request_info* http_response ";"
+// pin=2: 看到 HTTP_METHOD (get/post/...) 就锁定为 operation, 后续路径 / 参数 /
+// 响应部分写错不会把整条 HTTP 定义吞掉, 其它接口定义还能正常解析。
+operation ::= annotation* HTTP_METHOD http_path http_request_info* http_response ";" { pin=2 }

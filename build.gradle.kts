@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.changelog) // Gradle Changelog Plugin
     alias(libs.plugins.qodana) // Gradle Qodana Plugin
     alias(libs.plugins.kover) // Gradle Kover Plugin
+    alias(libs.plugins.grammarKit) // Grammar-Kit Gradle Plugin
 }
 
 group = providers.gradleProperty("pluginGroup").get()
@@ -43,7 +44,12 @@ dependencies {
 
     // IntelliJ Platform Gradle Plugin Dependencies Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
     intellijPlatform {
-        create(providers.gradleProperty("platformType"), providers.gradleProperty("platformVersion"))
+        val platformLocalPath = providers.gradleProperty("platformLocalPath")
+        if (platformLocalPath.isPresent && platformLocalPath.get().isNotBlank()) {
+            local(platformLocalPath.get())
+        } else {
+            create(providers.gradleProperty("platformType"), providers.gradleProperty("platformVersion"))
+        }
 
         // Plugin Dependencies. Uses `platformBundledPlugins` property from the gradle.properties file for bundled IntelliJ Platform plugins.
         bundledPlugins(providers.gradleProperty("platformBundledPlugins").map { it.split(',') })
@@ -52,7 +58,8 @@ dependencies {
         plugins(providers.gradleProperty("platformPlugins").map { it.split(',') })
 
         instrumentationTools()
-        pluginVerifier()
+        // 固定 verifier-cli 版本，避免默认 LATEST/{prefer+} 在仓库元数据拉取失败时无 CLI（报 No executable）
+        pluginVerifier(libs.versions.intellijPluginVerifier.get())
         zipSigner()
         testFramework(TestFrameworkType.Platform)
     }
@@ -91,7 +98,14 @@ intellijPlatform {
 
         ideaVersion {
             sinceBuild = providers.gradleProperty("pluginSinceBuild")
-            untilBuild = providers.gradleProperty("pluginUntilBuild")
+            // 默认会把 until-build 设为当前 platformVersion 的 MAJOR.*（如 233.*），导致新版 GoLand（251）无法安装。
+            // 官方文档：until-build 需用 provider { null } 显式去掉，才能兼容更高版本 IDE。
+            val untilBuildProp = providers.gradleProperty("pluginUntilBuild").orNull?.trim()
+            if (untilBuildProp.isNullOrEmpty()) {
+                untilBuild = provider { null }
+            } else {
+                untilBuild = untilBuildProp
+            }
         }
     }
 
@@ -109,9 +123,18 @@ intellijPlatform {
         channels = providers.gradleProperty("pluginVersion").map { listOf(it.substringAfter('-', "").substringBefore('.').ifEmpty { "default" }) }
     }
 
+    // 必须在此处声明 pluginVerification，verifyPlugin 任务才能解析 Plugin Verifier CLI（dependencies 里的 pluginVerifier()）。
+    //
+    // 不要使用 recommended()：它会在「配置阶段」调用 ProductReleasesValueSource 拉取 JetBrains 发布的 IDE 列表，
+    // 在企业代理 / 自定义 HTTPS 证书环境下容易 PKIX，且异常会被 Configuration Cache 序列化导致二次报错。
+    // 以下与 gradle.properties 中 platformType / platformVersion（编译所用 SDK）一致即可满足上架前的二进制兼容性校验；
+    // 若还需校验 GoLand 等，可追加一行：ide("GO", "2025.1")。
     pluginVerification {
         ides {
-            recommended()
+            ide(
+                providers.gradleProperty("platformType"),
+                providers.gradleProperty("platformVersion"),
+            )
         }
     }
 }
@@ -133,6 +156,11 @@ kover {
     }
 }
 
+// Grammar-Kit 自动生成 Lexer / Parser
+// 源文件:
+//   - BNF:  src/main/grammars/xidl.bnf
+//   - Flex: src/main/kotlin/com/wps/cloud/xidl/language/lexer/_XidlLexer.flex
+// 生成目标: src/main/gen (已在 sourceSets 里注入为 main 源码)
 tasks {
     wrapper {
         gradleVersion = providers.gradleProperty("gradleVersion").get()
@@ -142,6 +170,30 @@ tasks {
         dependsOn(patchChangelog)
     }
 
+    generateParser {
+        sourceFile.set(file("src/main/grammars/xidl.bnf"))
+        targetRootOutputDir.set(file("src/main/gen"))
+        pathToParser.set("com/wps/cloud/xidl/language/parser/XidlParser.java")
+        pathToPsiRoot.set("com/wps/cloud/xidl/language/psi")
+        purgeOldFiles.set(true)
+    }
+
+    generateLexer {
+        sourceFile.set(file("src/main/kotlin/com/wps/cloud/xidl/language/lexer/_XidlLexer.flex"))
+        targetOutputDir.set(file("src/main/gen/com/wps/cloud/xidl/language/lexer"))
+        // Lexer 引用生成的 XidlTypes 常量，需要 Parser 先生成
+        dependsOn(generateParser)
+        purgeOldFiles.set(true)
+    }
+
+    // 让所有编译任务都等待生成完成
+    compileKotlin {
+        dependsOn(generateLexer, generateParser)
+    }
+
+    compileJava {
+        dependsOn(generateLexer, generateParser)
+    }
 }
 
 intellijPlatformTesting {

@@ -44,7 +44,7 @@ class XidlFindUsageProvider : FindUsagesProvider {
     @NotNull
     override fun getDescriptiveName(@NotNull element: PsiElement): String {
         return when (element) {
-            is XidlSchemaName -> element.name
+            is XidlSchemaName -> element.name ?: ""
             is XidlTypeReference -> element.identifier.text
             is XidlNamedElement -> element.name ?: "未命名元素"
             else -> ""

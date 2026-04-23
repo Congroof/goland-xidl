@@ -8,17 +8,16 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
 import static com.wps.cloud.xidl.language.psi.XidlTypes.*;
-import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import com.wps.cloud.xidl.language.psi.*;
 
-public class XidlSchemaObjectImpl extends ASTWrapperPsiElement implements XidlSchemaObject {
+public class XidlAnnoStringImpl extends XidlAnnoStringMixin implements XidlAnnoString {
 
-  public XidlSchemaObjectImpl(@NotNull ASTNode node) {
+  public XidlAnnoStringImpl(ASTNode node) {
     super(node);
   }
 
   public void accept(@NotNull XidlVisitor visitor) {
-    visitor.visitSchemaObject(this);
+    visitor.visitAnnoString(this);
   }
 
   @Override
@@ -29,14 +28,8 @@ public class XidlSchemaObjectImpl extends ASTWrapperPsiElement implements XidlSc
 
   @Override
   @NotNull
-  public List<XidlBlockMeta> getBlockMetaList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, XidlBlockMeta.class);
-  }
-
-  @Override
-  @Nullable
-  public XidlSchemaName getSchemaName() {
-    return findChildByClass(XidlSchemaName.class);
+  public PsiElement getStringLiteral() {
+    return findNotNullChildByType(STRING_LITERAL);
   }
 
 }

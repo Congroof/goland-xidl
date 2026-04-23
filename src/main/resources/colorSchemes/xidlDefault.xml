@@ -1,0 +1,33 @@
+<?xml version='1.0'?>
+<list>
+    <!-- 注释 -->
+    <option name="XIDL_LINE_COMMENT" baseAttributes="DEFAULT_LINE_COMMENT"/>
+    <option name="XIDL_BLOCK_COMMENT" baseAttributes="DEFAULT_BLOCK_COMMENT"/>
+
+    <!-- 关键字类 -->
+    <option name="XIDL_KEYWORD" baseAttributes="DEFAULT_KEYWORD"/>
+    <option name="XIDL_HTTP_METHOD" baseAttributes="DEFAULT_KEYWORD"/>
+    <option name="XIDL_BUILTIN_TYPE" baseAttributes="DEFAULT_KEYWORD"/>
+    <option name="XIDL_BOOLEAN" baseAttributes="DEFAULT_KEYWORD"/>
+
+    <!-- 标识符 -->
+    <option name="XIDL_IDENTIFIER" baseAttributes="DEFAULT_IDENTIFIER"/>
+
+    <!-- 字面量 -->
+    <option name="XIDL_STRING" baseAttributes="DEFAULT_STRING"/>
+    <option name="XIDL_NUMBER" baseAttributes="DEFAULT_NUMBER"/>
+
+    <!-- 括号 -->
+    <option name="XIDL_BRACES" baseAttributes="DEFAULT_BRACES"/>
+    <option name="XIDL_BRACKETS" baseAttributes="DEFAULT_BRACKETS"/>
+    <option name="XIDL_PARENTHESES" baseAttributes="DEFAULT_PARENTHS"/>
+
+    <!-- 注解 -->
+    <option name="XIDL_ANNOTATION" baseAttributes="DEFAULT_METADATA"/>
+
+    <!-- 符号 -->
+    <option name="XIDL_SEMICOLON" baseAttributes="DEFAULT_SEMICOLON"/>
+    <option name="XIDL_COMMA" baseAttributes="DEFAULT_COMMA"/>
+    <option name="XIDL_DOT" baseAttributes="DEFAULT_DOT"/>
+    <option name="XIDL_SIGN" baseAttributes="DEFAULT_OPERATION_SIGN"/>
+</list>

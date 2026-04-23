@@ -5,10 +5,16 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface XidlSchemaName extends XidlNamedElement {
+public interface XidlHttpRequestBody extends PsiElement {
 
   @Nullable
-  PsiElement getIdentifier();
+  XidlBlockMeta getBlockMeta();
+
+  @Nullable
+  XidlTypeReference getTypeReference();
+
+  @Nullable
+  PsiElement getSimpleType();
 
   @Nullable
   PsiElement getStringLiteral();

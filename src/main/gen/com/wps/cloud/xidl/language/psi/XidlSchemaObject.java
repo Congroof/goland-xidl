@@ -10,7 +10,7 @@ public interface XidlSchemaObject extends PsiElement {
   @NotNull
   List<XidlBlockMeta> getBlockMetaList();
 
-  @NotNull
+  @Nullable
   XidlSchemaName getSchemaName();
 
 }

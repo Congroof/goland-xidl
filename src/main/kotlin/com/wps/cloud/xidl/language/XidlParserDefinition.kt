@@ -30,7 +30,11 @@ internal class XidlParserDefinition : ParserDefinition {
 
     @NotNull
     override fun getStringLiteralElements(): TokenSet {
-        return TokenSet.EMPTY
+        // 声明 STRING_LITERAL 为字符串字面量 token,
+        // 这样 IntelliJ platform 才会把它当成字符串处理:
+        // - PsiReferenceContributor 能正常收集 leaf 上的 references
+        // - Find Usages / Ctrl+Click / quote handler 才能作用在字符串上
+        return TokenSet.create(XidlTypes.STRING_LITERAL)
     }
 
     @NotNull

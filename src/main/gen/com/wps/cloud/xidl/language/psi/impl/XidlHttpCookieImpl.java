@@ -11,14 +11,14 @@ import static com.wps.cloud.xidl.language.psi.XidlTypes.*;
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import com.wps.cloud.xidl.language.psi.*;
 
-public class XidlSchemaObjectImpl extends ASTWrapperPsiElement implements XidlSchemaObject {
+public class XidlHttpCookieImpl extends ASTWrapperPsiElement implements XidlHttpCookie {
 
-  public XidlSchemaObjectImpl(@NotNull ASTNode node) {
+  public XidlHttpCookieImpl(@NotNull ASTNode node) {
     super(node);
   }
 
   public void accept(@NotNull XidlVisitor visitor) {
-    visitor.visitSchemaObject(this);
+    visitor.visitHttpCookie(this);
   }
 
   @Override
@@ -29,14 +29,8 @@ public class XidlSchemaObjectImpl extends ASTWrapperPsiElement implements XidlSc
 
   @Override
   @NotNull
-  public List<XidlBlockMeta> getBlockMetaList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, XidlBlockMeta.class);
-  }
-
-  @Override
-  @Nullable
-  public XidlSchemaName getSchemaName() {
-    return findChildByClass(XidlSchemaName.class);
+  public XidlBlockMeta getBlockMeta() {
+    return findNotNullChildByClass(XidlBlockMeta.class);
   }
 
 }

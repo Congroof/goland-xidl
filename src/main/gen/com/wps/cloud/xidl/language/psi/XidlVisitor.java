@@ -7,11 +7,43 @@ import com.intellij.psi.PsiElement;
 
 public class XidlVisitor extends PsiElementVisitor {
 
+  public void visitAnnoString(@NotNull XidlAnnoString o) {
+    visitPsiElement(o);
+  }
+
   public void visitBlockMeta(@NotNull XidlBlockMeta o) {
     visitPsiElement(o);
   }
 
   public void visitFuncName(@NotNull XidlFuncName o) {
+    visitPsiElement(o);
+  }
+
+  public void visitHttpCookie(@NotNull XidlHttpCookie o) {
+    visitPsiElement(o);
+  }
+
+  public void visitHttpHeader(@NotNull XidlHttpHeader o) {
+    visitPsiElement(o);
+  }
+
+  public void visitHttpQuery(@NotNull XidlHttpQuery o) {
+    visitPsiElement(o);
+  }
+
+  public void visitHttpRequestBody(@NotNull XidlHttpRequestBody o) {
+    visitPsiElement(o);
+  }
+
+  public void visitHttpResponse(@NotNull XidlHttpResponse o) {
+    visitPsiElement(o);
+  }
+
+  public void visitIncludePath(@NotNull XidlIncludePath o) {
+    visitPsiElement(o);
+  }
+
+  public void visitOperation(@NotNull XidlOperation o) {
     visitPsiElement(o);
   }
 

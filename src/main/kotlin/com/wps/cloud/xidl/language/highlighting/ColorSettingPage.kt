@@ -1,6 +1,5 @@
 package com.wps.cloud.xidl.language.highlighting
 
-import com.intellij.openapi.editor.DefaultLanguageHighlighterColors
 import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.openapi.fileTypes.SyntaxHighlighter
 import com.intellij.openapi.options.colors.AttributesDescriptor
@@ -23,25 +22,35 @@ internal class ColorSettingPage : ColorSettingsPage {
     @NotNull
     override fun getDemoText(): String {
         return """
-            // mapi
-            func CreateOauthAuth(platformId, platformName, platformLogo, h5Ua string, oauthCfg *oauth_cfg_request) (*v1_oauth_auth_cfg)
+            // 行注释
+            /* 块注释 */
 
-            /* operation  */
+            app demo
+            version "1.0.0"
+
+            @deprecated
+            @desc "用户信息"
+            schema user {
+                id: int64
+                name: string[1, 64]
+                avatar?: RawMessage
+            }
+
+            func CreateOauthAuth(platformId, platformName string, oauthCfg *oauth_cfg_request) (*v1_oauth_auth_cfg)
+
             @server "public"
+            @prefix_server {"admin", "public"}
             endpoints {
-                @summary "[u]获取otp二维码"
-                @desc "[u]获取otp二维码"
+                @summary "获取 otp 二维码"
                 @name "u_v1_get_otp_qr"
-                @tags {"管理后台otp认证相关","user"}
+                @tags {"otp认证", "user"}
                 @middleware_replace_map {"auth:validate-or-admin-session"}
                 post /login/u/v1/otp/{
-                    @desc "用户id"
                     @xtype "int64"
                     user_id: string[1,]
                 }/qr/read
                 ~ {
-                    @desc "用户会话"
-                    "wps_sid": string[1,127]
+                    "wps_sid": string[1, 127]
                 }
                 . v1_otp_qr_req_body
                 200 v1_otp_qr_resp
@@ -69,16 +78,23 @@ internal class ColorSettingPage : ColorSettingsPage {
 
     companion object {
         private val DESCRIPTORS = arrayOf<AttributesDescriptor>(
-            AttributesDescriptor("注释", DefaultLanguageHighlighterColors.LINE_COMMENT),
-            AttributesDescriptor("关键字", DefaultLanguageHighlighterColors.KEYWORD),
-            AttributesDescriptor("标识符", DefaultLanguageHighlighterColors.IDENTIFIER),
-            AttributesDescriptor("字符串", DefaultLanguageHighlighterColors.STRING),
-            AttributesDescriptor("数字", DefaultLanguageHighlighterColors.NUMBER),
-            AttributesDescriptor("括号", DefaultLanguageHighlighterColors.BRACES),
-            AttributesDescriptor("注解", DefaultLanguageHighlighterColors.METADATA),
-            AttributesDescriptor("类型引用", DefaultLanguageHighlighterColors.CLASS_REFERENCE),
-            AttributesDescriptor("函数名", DefaultLanguageHighlighterColors.FUNCTION_DECLARATION),
-
+            AttributesDescriptor("注释//行注释", XidlSyntaxHighlighter.LINE_COMMENT),
+            AttributesDescriptor("注释//块注释", XidlSyntaxHighlighter.BLOCK_COMMENT),
+            AttributesDescriptor("关键字//对象关键字 (schema/cmd/def/…)", XidlSyntaxHighlighter.KEYWORD),
+            AttributesDescriptor("关键字//HTTP 方法 (get/post/…)", XidlSyntaxHighlighter.HTTP_METHOD),
+            AttributesDescriptor("关键字//内建类型 (int/string/…)", XidlSyntaxHighlighter.BUILTIN_TYPE),
+            AttributesDescriptor("标识符", XidlSyntaxHighlighter.IDENTIFIER),
+            AttributesDescriptor("字面量//字符串", XidlSyntaxHighlighter.STRING),
+            AttributesDescriptor("字面量//数字", XidlSyntaxHighlighter.NUMBER),
+            AttributesDescriptor("字面量//布尔", XidlSyntaxHighlighter.BOOLEAN),
+            AttributesDescriptor("括号//花括号 { }", XidlSyntaxHighlighter.BRACES),
+            AttributesDescriptor("括号//方括号 [ ]", XidlSyntaxHighlighter.BRACKETS),
+            AttributesDescriptor("括号//圆括号 ( )", XidlSyntaxHighlighter.PARENTHESES),
+            AttributesDescriptor("注解", XidlSyntaxHighlighter.ANNOTATION),
+            AttributesDescriptor("符号//分号", XidlSyntaxHighlighter.SEMICOLON),
+            AttributesDescriptor("符号//逗号", XidlSyntaxHighlighter.COMMA),
+            AttributesDescriptor("符号//点号", XidlSyntaxHighlighter.DOT),
+            AttributesDescriptor("符号//运算符", XidlSyntaxHighlighter.SIGN),
         )
     }
 }

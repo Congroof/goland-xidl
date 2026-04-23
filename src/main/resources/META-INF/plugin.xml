@@ -1,19 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <idea-plugin>
-    <id>com.leibuyun.xidl</id>
-    <name>Xidl Language Support</name>
-    <version>1.0.0</version>
-    <vendor>leibuyun</vendor>
+    <id>com.congroof.xidl</id>
+    <name>Xidl Language</name>
+    <vendor url="https://github.com/Congroof/goland-xidl">Congroof</vendor>
 
-    <description><![CDATA[
-        Support for Xidl language including syntax highlighting, code completion,
-        navigation, and other language features.
-        ]]></description>
-
+    <!-- version / description / change-notes 由 Gradle IntelliJ Platform Plugin
+         通过 README.md 与 CHANGELOG.md 自动注入（见 build.gradle.kts 的 pluginConfiguration 块）。 -->
 
     <depends>com.intellij.modules.platform</depends>
-
-    <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
         <fileType name="Xidl" implementationClass="com.wps.cloud.xidl.language.XidlFileType" fieldName="INSTANCE"
@@ -54,11 +48,12 @@
             implementationClass="com.wps.cloud.xidl.language.navigation.XidlSchemaPresentationProvider"/>
 
 
-        <!-- 代码格式化 -->
-<!--        <lang.formatter-->
-<!--            language="Xidl"-->
-<!--            implementationClass="com.wps.cloud.xidl.language.formatting.XidlFormattingModelBuilder"/>-->
+        <!-- 代码格式化 (缩进 / 空格 / { } 换行 / ; 后换行) -->
+        <lang.formatter
+            language="Xidl"
+            implementationClass="com.wps.cloud.xidl.language.formatting.XidlFormattingModelBuilder"/>
 
+<!-- 已废弃: 改用 BNF 里 anno_string + XidlAnnoStringMixin 方案, 更可靠 -->
 <!--        <psi.referenceContributor language="Xidl"-->
 <!--                                  implementation="com.wps.cloud.xidl.language.reference.XidlReferenceContributor"/>-->
 
@@ -70,6 +65,8 @@
 
         <lang.elementManipulator forClass="com.wps.cloud.xidl.language.psi.impl.XidlTypeReferenceImpl"
                                  implementationClass="com.wps.cloud.xidl.language.reference.XidlTypeReferenceManipulator"/>
+
+        <additionalTextAttributes scheme="default" file="colorSchemes/xidlDefault.xml"/>
 
 <!--        <include.provider implementation="com.wps.cloud.xidl.language.include.XidlFileIncludeProvider"/>-->
     </extensions>

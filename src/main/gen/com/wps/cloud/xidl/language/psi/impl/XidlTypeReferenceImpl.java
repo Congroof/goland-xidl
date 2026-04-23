@@ -8,13 +8,11 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
 import static com.wps.cloud.xidl.language.psi.XidlTypes.*;
-import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import com.wps.cloud.xidl.language.psi.*;
-import com.intellij.psi.PsiReference;
 
-public class XidlTypeReferenceImpl extends ASTWrapperPsiElement implements XidlTypeReference {
+public class XidlTypeReferenceImpl extends XidlTypeReferenceMixin implements XidlTypeReference {
 
-  public XidlTypeReferenceImpl(@NotNull ASTNode node) {
+  public XidlTypeReferenceImpl(ASTNode node) {
     super(node);
   }
 
@@ -32,12 +30,6 @@ public class XidlTypeReferenceImpl extends ASTWrapperPsiElement implements XidlT
   @NotNull
   public PsiElement getIdentifier() {
     return findNotNullChildByType(IDENTIFIER);
-  }
-
-  @Override
-  @NotNull
-  public PsiReference getReference() {
-    return XidlPsiImplUtil.getReference(this);
   }
 
 }
